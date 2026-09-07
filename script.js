@@ -724,12 +724,24 @@ window.addEventListener('online', () => {
 setTimeout(() => offlineQueue.processQueue(), 2000);
 
 // Dynamic Backend API Base URL configuration for decoupled hosting (Vercel + Render)
+const DEFAULT_RENDER_BACKEND = 'https://parrot-ledger-api.onrender.com';
+
+function normalizeBackendUrl(url) {
+    if (!url) return '';
+    let clean = url.trim().replace(/\/+$/, '');
+    if (clean && !clean.startsWith('http://') && !clean.startsWith('https://')) {
+        clean = 'https://' + clean;
+    }
+    return clean;
+}
+
 let API_BASE_URL = (() => {
     // If running locally or served directly from Render, use relative endpoints
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return '';
     if (window.location.hostname.endsWith('onrender.com')) return '';
-    // If hosted on Vercel or custom domain, use configured Render backend URL
-    return localStorage.getItem('CUSTOM_API_BASE_URL') || '';
+    // If hosted on Vercel or custom domain, use configured Render backend URL or default live backend
+    const custom = localStorage.getItem('CUSTOM_API_BASE_URL');
+    return custom ? normalizeBackendUrl(custom) : DEFAULT_RENDER_BACKEND;
 })();
 
 function updateApiStatusIndicator() {
@@ -742,14 +754,9 @@ function updateApiStatusIndicator() {
         apiIndicatorEl.textContent = 'Render (Direct Full-Stack)';
         apiIndicatorEl.style.color = '#4ade80';
     } else {
-        const customUrl = localStorage.getItem('CUSTOM_API_BASE_URL');
-        if (customUrl) {
-            apiIndicatorEl.textContent = customUrl.replace(/^https?:\/\//, '');
-            apiIndicatorEl.style.color = '#4ade80';
-        } else {
-            apiIndicatorEl.textContent = 'Not Configured (Click to set Render URL)';
-            apiIndicatorEl.style.color = '#fbbf24';
-        }
+        const activeUrl = API_BASE_URL || DEFAULT_RENDER_BACKEND;
+        apiIndicatorEl.textContent = activeUrl.replace(/^https?:\/\//, '');
+        apiIndicatorEl.style.color = '#4ade80';
     }
 }
 
@@ -758,13 +765,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnChangeApi = document.getElementById('btn-change-api-url');
     if (btnChangeApi) {
         btnChangeApi.addEventListener('click', () => {
-            const current = localStorage.getItem('CUSTOM_API_BASE_URL') || '';
+            const current = localStorage.getItem('CUSTOM_API_BASE_URL') || DEFAULT_RENDER_BACKEND;
             const next = prompt(
                 'Enter your live Render Backend API URL:\n(e.g., https://your-app-name.onrender.com)\n\nLeave blank to reset to default.',
                 current
             );
             if (next !== null) {
-                const clean = next.trim().replace(/\/+$/, '');
+                const clean = normalizeBackendUrl(next);
                 if (clean) {
                     localStorage.setItem('CUSTOM_API_BASE_URL', clean);
                 } else {
