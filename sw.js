@@ -5,8 +5,6 @@ const ASSETS_TO_CACHE = [
   '/style.css',
   '/script.js',
   '/apple-touch-icon.png',
-  '/firewatch_bg.png',
-  '/winter_bg.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
