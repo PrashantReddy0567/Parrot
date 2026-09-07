@@ -1,0 +1,17 @@
+{
+  "short_name": "Terrasol FinServ",
+  "name": "Terrasol FinServ Loan Management",
+  "icons": [
+    {
+      "src": "apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0d1117",
+  "theme_color": "#5e17eb",
+  "display": "standalone",
+  "orientation": "portrait"
+}

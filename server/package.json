@@ -1,0 +1,16 @@
+{
+  "name": "mal-backend-server",
+  "version": "1.0.0",
+  "description": "Multi-Tenant Express API backend for MAL",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "localtunnel": "^2.0.2",
+    "sqlite3": "^5.1.7"
+  }
+}

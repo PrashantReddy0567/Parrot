@@ -1,0 +1,2274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Terrasol FinServ</title>
+    
+    <!-- PWA & iOS Mobile Optimization -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Terrasol FinServ">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <!-- CSS Dependencies -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    
+    <!-- JS Dependencies (CDNs) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- 0. LOGIN PAGE -->
+    <div id="login-container" class="login-container">
+        <div class="glass-card login-card">
+            <div class="login-header" style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+                <!-- Terrasol SVG Symbol -->
+                <svg class="terrasol-logo" viewBox="0 0 100 100" width="80" height="80" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 4px 12px rgba(226, 91, 56, 0.35));">
+                    <defs>
+                        <radialGradient id="solGrad" cx="50%" cy="30%" r="50%">
+                            <stop offset="0%" stop-color="#fee175" />
+                            <stop offset="100%" stop-color="#e25b38" />
+                        </radialGradient>
+                        <linearGradient id="terraGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#201729" />
+                            <stop offset="100%" stop-color="#8b3a47" />
+                        </linearGradient>
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="3" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                    </defs>
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#febb60" stroke-width="2" stroke-dasharray="8 5" opacity="0.8" />
+                    <circle cx="50" cy="40" r="18" fill="url(#solGrad)" filter="url(#glow)" />
+                    <path d="M 22,68 C 30,78 70,78 78,68 A 32,32 0 0,1 22,68" fill="url(#terraGrad)" />
+                    <path d="M 25,65 Q 12,45 30,30 Q 42,20 52,24 Q 62,28 60,38 Q 58,48 70,48 Q 85,48 80,68 C 76,78 60,82 45,82 Q 32,82 25,65" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.9" />
+                    <path d="M 30,30 Q 10,18 20,8 Q 30,12 35,26 Z" fill="url(#solGrad)" stroke="#febb60" stroke-width="1.5" />
+                    <path d="M 70,48 Q 90,38 88,24 Q 78,28 73,42 Z" fill="url(#terraGrad)" stroke="#febb60" stroke-width="1.5" />
+                    <path d="M 52,24 L 56,16 L 50,18 L 48,12 L 46,20 Z" fill="#ffffff" />
+                    <circle cx="51" cy="18" r="1" fill="#e25b38" />
+                    <path d="M 25,65 L 18,63 L 23,58 Z" fill="#febb60" />
+                </svg>
+                <h1 class="login-title">Terrasol FinServ</h1>
+                <p class="login-subtitle">Sign in to access your loan management portal</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="form-grid" style="grid-template-columns: 1fr; gap: 16px;">
+                    <div class="form-group">
+                        <label for="login-username"><i class="fa-solid fa-user"></i> Username</label>
+                        <input type="text" id="login-username" placeholder="Enter username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
+                        <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                            <input type="password" id="login-password" placeholder="Enter password" required style="width: 100%; padding-right: 45px;">
+                            <button type="button" id="toggle-password-btn" style="position: absolute; right: 12px; background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; padding: 4px; font-size: 16px;">
+                                <i class="fa-solid fa-eye" id="toggle-password-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-role"><i class="fa-solid fa-shield-halved"></i> Security Role</label>
+                        <select id="login-role">
+                            <option value="admin" selected>System Administrator</option>
+                            <option value="owner">System Owner</option>
+                            <option value="collector">Collector / Field Agent</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-wood" style="width: 100%; margin-top: 10px; padding: 14px;">
+                    <i class="fa-solid fa-right-to-bracket"></i> Authenticate
+                </button>
+            </form>
+            
+        </div>
+    </div>
+
+    <!-- 0.2 WORKSPACE SETUP (PAGE 2) -->
+    <div id="workspace-setup-container" class="login-container" style="display: none;">
+        <div class="glass-card login-card" style="max-width: 480px; width: 100%;">
+            <div class="login-header">
+                <svg class="terrasol-logo" viewBox="0 0 100 100" width="80" height="80" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 4px 10px rgba(226, 91, 56, 0.35));">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#febb60" stroke-width="2" stroke-dasharray="8 5" opacity="0.8" />
+                    <circle cx="50" cy="40" r="18" fill="url(#solGrad)" filter="url(#glow)" />
+                    <path d="M 22,68 C 30,78 70,78 78,68 A 32,32 0 0,1 22,68" fill="url(#terraGrad)" />
+                    <path d="M 25,65 Q 12,45 30,30 Q 42,20 52,24 Q 62,28 60,38 Q 58,48 70,48 Q 85,48 80,68 C 76,78 60,82 45,82 Q 32,82 25,65" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.9" />
+                    <path d="M 30,30 Q 10,18 20,8 Q 30,12 35,26 Z" fill="url(#solGrad)" stroke="#febb60" stroke-width="1.5" />
+                    <path d="M 70,48 Q 90,38 88,24 Q 78,28 73,42 Z" fill="url(#terraGrad)" stroke="#febb60" stroke-width="1.5" />
+                    <path d="M 52,24 L 56,16 L 50,18 L 48,12 L 46,20 Z" fill="#ffffff" />
+                    <circle cx="51" cy="18" r="1" fill="#e25b38" />
+                    <path d="M 25,65 L 18,63 L 23,58 Z" fill="#febb60" />
+                </svg>
+                <h1 style="font-size: 24px; font-weight: 800; margin-top: 12px; background: linear-gradient(135deg, var(--text-dark) 30%, var(--color-primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Workspace Setup</h1>
+                <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;">Configure your custom Company / Organization Name</p>
+            </div>
+            
+            <form id="workspace-setup-form" style="margin-top: 24px;">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 8px; display: block;">Company / Organization Name</label>
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"><i class="fa-solid fa-building"></i></span>
+                        <input type="text" id="setup-company-name" placeholder="e.g. Terrasol FinServ Srikakulam" required style="padding-left: 40px; width: 100%; border-radius: 10px; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding-top: 12px; padding-bottom: 12px; font-size: 14px;">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-wood" style="width: 100%; margin-top: 20px; padding: 14px;">
+                    <i class="fa-solid fa-check"></i> Save and Continue
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 0.5 LINE SELECTION PORTAL -->
+    <div id="line-portal-container" class="line-portal-container" style="display: none;">
+        <div class="glass-card line-portal-card" id="line-portal-card">
+            <div class="portal-header" style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <svg class="terrasol-logo" viewBox="0 0 100 100" width="60" height="60" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 4px 10px rgba(226, 91, 56, 0.35));">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#febb60" stroke-width="2" stroke-dasharray="8 5" opacity="0.8" />
+                    <circle cx="50" cy="40" r="18" fill="url(#solGrad)" filter="url(#glow)" />
+                    <path d="M 22,68 C 30,78 70,78 78,68 A 32,32 0 0,1 22,68" fill="url(#terraGrad)" />
+                    <path d="M 25,65 Q 12,45 30,30 Q 42,20 52,24 Q 62,28 60,38 Q 58,48 70,48 Q 85,48 80,68 C 76,78 60,82 45,82 Q 32,82 25,65" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.9" />
+                    <path d="M 30,30 Q 10,18 20,8 Q 30,12 35,26 Z" fill="url(#solGrad)" stroke="#febb60" stroke-width="1.5" />
+                    <path d="M 70,48 Q 90,38 88,24 Q 78,28 73,42 Z" fill="url(#terraGrad)" stroke="#febb60" stroke-width="1.5" />
+                    <path d="M 52,24 L 56,16 L 50,18 L 48,12 L 46,20 Z" fill="#ffffff" />
+                    <circle cx="51" cy="18" r="1" fill="#e25b38" />
+                    <path d="M 25,65 L 18,63 L 23,58 Z" fill="#febb60" />
+                </svg>
+                <h1 class="portal-title">Collection Line Portal</h1>
+                <p class="portal-subtitle">Select an existing line to begin work or configure lines and operating areas</p>
+            </div>
+
+            <!-- Portal Tabs (Owner/Admin only) -->
+            <div class="portal-tabs owner-admin-element" id="portal-tabs" style="display: none;">
+                <button type="button" class="portal-tab-btn active" id="btn-portal-tab-lines">
+                    <i class="fa-solid fa-route"></i> Collection Lines
+                </button>
+                <button type="button" class="portal-tab-btn" id="btn-portal-tab-areas">
+                    <i class="fa-solid fa-map-location-dot"></i> Operating Areas
+                </button>
+            </div>
+
+            <!-- Tab 1: Collection Lines -->
+            <div id="portal-tab-content-lines" class="portal-tab-content">
+                <div class="portal-section" style="margin-bottom: 14px;">
+                    <h3><i class="fa-solid fa-list-check"></i> Available Lines</h3>
+                    <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px;">
+                        <select id="portal-lines-dropdown" class="form-input" style="flex-grow: 1; padding: 7px 10px; font-size: 13px;">
+                            <option value="">-- Select a Collection Line --</option>
+                        </select>
+                        <button type="button" id="btn-portal-select-line-submit" class="btn btn-wood" style="padding: 7px 16px; min-width: 110px; font-size: 13px;">
+                            <i class="fa-solid fa-play"></i> Begin Work
+                        </button>
+                        <button type="button" id="btn-portal-delete-line-submit" class="btn btn-secondary owner-admin-element" style="padding: 7px 12px; display: none;" title="Delete Line">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Create Line Section (Admin/Owner only) -->
+                <div id="portal-create-line-section" class="portal-section owner-admin-element" style="border-top: 1px solid var(--border-color); padding-top: 14px;">
+                    <h3><i class="fa-solid fa-plus-circle"></i> Create New Collection Line</h3>
+                    <form id="portal-create-line-form">
+                        <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="form-group">
+                                <label for="portal-new-line-no">Line Name / Number</label>
+                                <input type="text" id="portal-new-line-no" placeholder="e.g. Line 1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="portal-new-line-area">Map to Village / Area</label>
+                                <select id="portal-new-line-area" required>
+                                    <option value="">-- Select Area --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-wood" style="width: 100%; margin-top: 10px; padding: 8px 16px; font-size: 13px;">
+                            <i class="fa-solid fa-circle-plus"></i> Create Line Mapping
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tab 2: Operating Areas (Admin/Owner only) -->
+            <div id="portal-tab-content-areas" class="portal-tab-content owner-admin-element" style="display: none;">
+                <div class="portal-main-content">
+                    <!-- Left Section: Define Operating Area -->
+                    <div class="portal-left-section">
+                        <div class="portal-section">
+                            <h3><i class="fa-solid fa-map-location-dot"></i> Define Operating Area / Geofence</h3>
+                            <form id="portal-area-config-form">
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="portal-area-name">Village / Area Name</label>
+                                    <input type="text" id="portal-area-name" placeholder="e.g. East Village Ward 2" required>
+                                </div>
+                                <div class="form-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 12px; gap: 16px;">
+                                    <div class="form-group">
+                                        <label for="portal-area-lat">Center Latitude</label>
+                                        <input type="number" step="any" id="portal-area-lat" placeholder="Click map to autofill" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="portal-area-lng">Center Longitude</label>
+                                        <input type="number" step="any" id="portal-area-lng" placeholder="Click map to autofill" required>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 16px;">
+                                    <label for="portal-area-radius">Target Geofence Radius (meters)</label>
+                                    <input type="number" id="portal-area-radius" value="500" min="50" max="10000" required>
+                                </div>
+
+                                <div class="btn-group" style="margin-bottom: 16px;">
+                                    <button type="submit" class="btn btn-wood" style="padding: 10px 16px;">
+                                        <i class="fa-solid fa-map-pin"></i> Save Operating Area
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="btn-portal-clear-area">Clear</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Right Section: Map Visualizer & Area list table -->
+                    <div class="portal-right-section">
+                        <div class="portal-section">
+                            <h3><i class="fa-solid fa-earth-asia"></i> Area Mapping & Zone Visualizer</h3>
+                            <!-- Portal Map visualizer -->
+                            <div class="map-wrapper" id="portal-area-management-map" style="height: 220px; border-radius: 12px; margin-bottom: 16px; border: 1px solid var(--border-color);"></div>
+                            
+                            <!-- Area list table -->
+                            <div class="table-container" style="max-height: 150px; overflow-y: auto;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Area Name</th>
+                                            <th>Radius</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="portal-area-list-table-body">
+                                        <!-- Dynamic entries -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="portal-footer-info" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 12px; text-align: center;">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-portal-logout">
+                    <i class="fa-solid fa-power-off"></i> Log Out
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="app-container" class="app-container" style="display: none;">
+        <!-- SIDEBAR -->
+        <aside class="sidebar collapsed">
+            <div class="sidebar-brand" style="display: flex; align-items: center; gap: 10px;">
+                <svg class="terrasol-logo" viewBox="0 0 100 100" width="28" height="28" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 6px rgba(226, 91, 56, 0.35));">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#febb60" stroke-width="2" stroke-dasharray="8 5" opacity="0.8" />
+                    <circle cx="50" cy="40" r="18" fill="url(#solGrad)" filter="url(#glow)" />
+                    <path d="M 22,68 C 30,78 70,78 78,68 A 32,32 0 0,1 22,68" fill="url(#terraGrad)" />
+                    <path d="M 25,65 Q 12,45 30,30 Q 42,20 52,24 Q 62,28 60,38 Q 58,48 70,48 Q 85,48 80,68 C 76,78 60,82 45,82 Q 32,82 25,65" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.9" />
+                    <path d="M 30,30 Q 10,18 20,8 Q 30,12 35,26 Z" fill="url(#solGrad)" stroke="#febb60" stroke-width="1.5" />
+                    <path d="M 70,48 Q 90,38 88,24 Q 78,28 73,42 Z" fill="url(#terraGrad)" stroke="#febb60" stroke-width="1.5" />
+                    <path d="M 52,24 L 56,16 L 50,18 L 48,12 L 46,20 Z" fill="#ffffff" />
+                    <circle cx="51" cy="18" r="1" fill="#e25b38" />
+                    <path d="M 25,65 L 18,63 L 23,58 Z" fill="#febb60" />
+                </svg>
+                <span id="sidebar-brand-text">Terrasol FinServ</span>
+            </div>
+            
+            <div class="sidebar-user" style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; gap: 12px; align-items: center; width: 100%;">
+                    <div class="user-avatar" id="user-avatar-initials">AD</div>
+                    <div class="user-info" style="flex-grow: 1;">
+                        <div class="user-name" id="profile-name">Administrator</div>
+                        <div class="user-role owner-role" id="profile-role">
+                            <i class="fa-solid fa-user-tie"></i> <span>System Owner</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="active-line-badge-container" id="active-line-badge-container" style="padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); width: 100%;">
+                    <span class="active-line-badge" id="sidebar-active-line-badge"><i class="fa-solid fa-route"></i> Line: None</span>
+                </div>
+            </div>
+            
+            <nav style="flex-grow: 1;">
+                <ul class="sidebar-menu">
+                    <li class="menu-item" data-role="owner">
+                        <a class="menu-link active" data-view="dashboard">
+                            <i class="fa-solid fa-chart-pie"></i>
+                            <span data-translate="menu_dashboard">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="owner">
+                        <a class="menu-link" data-view="mentor-center" id="menu-link-mentor-center">
+                            <i class="fa-solid fa-book-bookmark"></i>
+                            <span data-translate="menu_mentor_center">Mentor Books</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="all">
+                        <a class="menu-link" data-view="rapid-posting" id="menu-link-rapid-posting">
+                            <i class="fa-solid fa-bolt-lightning"></i>
+                            <span data-translate="menu_rapid_posting">Rapid Posting</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="all">
+                        <a class="menu-link" data-view="new-loans">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                            <span data-translate="menu_new_loans">New Loans</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="all">
+                        <a class="menu-link" data-view="daily-posting">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            <span data-translate="menu_daily_posting">Field Collections</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="owner">
+                        <a class="menu-link" data-view="due-reports" id="menu-link-due-reports">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span data-translate="menu_due_reports">Due & Deficit Report</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="owner">
+                        <a class="menu-link" data-view="total-members">
+                            <i class="fa-solid fa-users"></i>
+                            <span data-translate="menu_total_members">Total Members</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="owner">
+                        <a class="menu-link" data-view="posting-slips">
+                            <i class="fa-solid fa-receipt"></i>
+                            <span data-translate="menu_posting_slips">Posting Slips</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="owner">
+                        <a class="menu-link" data-view="monthly-list">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span data-translate="menu_monthly_list">Monthly List</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="owner">
+                        <a class="menu-link" data-view="trial-balance">
+                            <i class="fa-solid fa-scale-balanced"></i>
+                            <span data-translate="menu_trial_balance">Trial Balance</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="owner">
+                        <a class="menu-link" data-view="area-settings">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                            <span data-translate="menu_area_management">Area Management</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" id="menu-item-admin-console" style="display: none;">
+                        <a class="menu-link" data-view="admin-console">
+                            <i class="fa-solid fa-server"></i>
+                            <span data-translate="menu_admin_console">Admin Console</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="owner">
+                        <a class="menu-link" data-view="settings">
+                            <i class="fa-solid fa-gears"></i>
+                            <span data-translate="menu_settings">System Settings</span>
+                        </a>
+                    </li>
+                    <li class="menu-item" data-role="all">
+                        <a class="menu-link" id="btn-sidebar-switch-line" style="cursor: pointer;">
+                            <i class="fa-solid fa-route"></i>
+                            <span data-translate="menu_switch_line">Switch Line</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a class="menu-link" id="btn-logout" style="color: var(--color-danger);">
+                    <i class="fa-solid fa-power-off"></i>
+                    <span data-translate="menu_logout">Log Out</span>
+                </a>
+            </div>
+        </aside>
+        
+        <!-- SIDEBAR OVERLAY FOR MOBILE VIEW -->
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+        <!-- MAIN WRAPPER -->
+        <div class="main-wrapper">
+            <!-- TOP HEADER -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <h2 class="page-title" id="active-view-title">Dashboard</h2>
+                </div>
+                <div class="header-right">
+                    <div id="sync-indicator" class="sync-badge" style="display: none; margin-right: 8px;">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span>Syncing...</span>
+                    </div>
+                    <!-- Quick Line Selector -->
+                    <div class="header-line-select-container" style="display: flex; align-items: center; gap: 6px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 4px 10px;">
+                        <i class="fa-solid fa-route" style="color: var(--color-primary); font-size: 13px;"></i>
+                        <select id="header-quick-line-select" style="background: transparent; border: none; font-size: 13px; font-weight: 700; color: var(--text-dark); outline: none; cursor: pointer; font-family: var(--font-main);">
+                            <option value="">-- Line: None --</option>
+                        </select>
+                    </div>
+                    <button id="btn-quick-rapid-post" class="date-badge" style="cursor: pointer; border: 1px solid var(--color-primary); background: linear-gradient(135deg, var(--color-primary), #ea580c); color: white; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px;" title="Rapid Keyboard Collection">
+                        <i class="fa-solid fa-bolt-lightning" style="color: #ffedd5; font-size: 13px;"></i>
+                        <span style="font-weight: 800; font-size: 12px; color: #ffffff;">Rapid Post</span>
+                    </button>
+                    <!-- Walkie-Talkie Channel 3 -->
+                    <button id="walkie-talkie-btn" class="date-badge" style="cursor: pointer; border: 1px solid var(--border-color); background: var(--bg-card); transition: all 0.2s ease; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px;" title="Walkie-Talkie Channel 3">
+                        <i class="fa-solid fa-walkie-talkie" style="color: var(--color-primary); font-size: 14px;"></i>
+                        <span style="font-weight: 700; font-size: 12px; color: var(--text-main);">Radio Ch. 3</span>
+                    </button>
+                    <div class="date-badge" style="padding: 4px 8px; gap: 4px;">
+                        <i class="fa-solid fa-language" style="color: var(--color-primary);"></i>
+                        <select id="header-lang-select" style="background: transparent; border: none; padding: 2px 4px; font-size: 13px; font-weight: 600; color: var(--text-dark); outline: none; cursor: pointer; font-family: var(--font-main);">
+                            <option value="en">EN</option>
+                            <option value="hi">हिन्दी (HI)</option>
+                            <option value="te">తెలుగు (TE)</option>
+                        </select>
+                    </div>
+                    <div class="date-badge">
+                        <i class="fa-solid fa-clock"></i>
+                        <span id="current-system-time">06-06-2026</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- MAIN CONTENT AREA -->
+            <main class="main-content">
+                
+                <!-- VIEW 1: DASHBOARD -->
+                <div id="view-dashboard" class="app-view active-view">
+                    <div id="dash-deficit-alert-container" style="display: none;"></div>
+                    
+                    <!-- Simplified Action Grid -->
+                    <div class="action-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px;">
+                        <a class="action-card primary" data-view="new-loans" style="cursor: pointer; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%); color: white; padding: 14px 18px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; text-decoration: none; box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s;">
+                            <i class="fa-solid fa-user-plus" style="font-size: 22px; margin-bottom: 6px;"></i>
+                            <span style="font-size: 14px; font-weight: 700; display: block;">Issue New Loan</span>
+                            <span style="font-size: 11px; opacity: 0.9; margin-top: 2px; display: block;">Add a new member & record loan</span>
+                        </a>
+                        <a class="action-card success" data-view="daily-posting" style="cursor: pointer; background: linear-gradient(135deg, var(--color-success) 0%, #059669 100%); color: white; padding: 14px 18px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; text-decoration: none; box-shadow: var(--shadow-sm); transition: transform 0.2s, box-shadow 0.2s;">
+                            <i class="fa-solid fa-calendar-check" style="font-size: 22px; margin-bottom: 6px;"></i>
+                            <span style="font-size: 14px; font-weight: 700; display: block;">Collect Daily Payments</span>
+                            <span style="font-size: 11px; opacity: 0.9; margin-top: 2px; display: block;">Mark daily collection from members</span>
+                        </a>
+                    </div>
+
+                    <!-- Today's Cash Ledger & Float Tracker -->
+                    <div class="glass-card" style="margin-bottom: 24px;">
+                        <h3 style="margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+                            <span style="font-size: 15px; font-weight: 700; color: var(--text-dark);"><i class="fa-solid fa-wallet" style="color: var(--color-success); margin-right: 6px;"></i> Today's Cash Ledger (Line Float)</span>
+                            <button class="btn btn-secondary btn-sm" id="btn-set-float" style="padding: 6px 12px; font-size: 11px; display: none;">
+                                <i class="fa-solid fa-pen-to-square"></i> Set Opening Float
+                            </button>
+                        </h3>
+                        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 0;">
+                            <div class="glass-card" style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 12px; display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">1. Opening Float</span>
+                                <span id="dash-cash-float" style="font-size: 20px; font-weight: 700; color: var(--text-dark);">₹0</span>
+                            </div>
+                            <div class="glass-card" style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 12px; display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">2. Today's Collections (+)</span>
+                                <span id="dash-cash-collections" style="font-size: 20px; font-weight: 700; color: var(--color-success);">₹0</span>
+                            </div>
+                            <div class="glass-card" style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 12px; display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">3. Daily Expenses (-)</span>
+                                <span id="dash-cash-expenses" style="font-size: 20px; font-weight: 700; color: var(--color-danger);">₹0</span>
+                            </div>
+                            <div class="glass-card" style="background: var(--bg-main); border: 1px solid var(--border-color); padding: 12px; display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">4. New Loans (-)</span>
+                                <span id="dash-cash-loans" style="font-size: 20px; font-weight: 700; color: var(--color-warning);">₹0</span>
+                            </div>
+                            <div class="glass-card" style="background: rgba(226, 91, 56, 0.08); border: 1px solid rgba(226, 91, 56, 0.2); padding: 12px; display: flex; flex-direction: column; gap: 4px;">
+                                <span style="font-size: 10px; color: var(--color-primary-light); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Net Cash in Hand</span>
+                                <span id="dash-cash-in-hand" style="font-size: 22px; font-weight: 800; color: var(--text-dark);">₹0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details Toggle Bar -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; background: rgba(226, 91, 56, 0.05); padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(226, 91, 56, 0.15);">
+                        <h3 style="font-size: 14px; font-weight: 700; color: var(--text-dark); margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-chart-simple" style="color: var(--color-primary);"></i> Today's Details & Analytics
+                        </h3>
+                        <button class="btn btn-secondary btn-sm" id="btn-toggle-advanced-stats" style="padding: 6px 12px; font-size: 11px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-eye-slash" id="toggle-stats-icon"></i> <span id="toggle-stats-text">Hide Details</span>
+                        </button>
+                    </div>
+
+                    <!-- Wrapper for Toggleable Stats -->
+                    <div id="advanced-stats-container">
+                        <!-- Stats Cards -->
+                        <div class="stats-grid">
+                            <div class="glass-card stat-card">
+                                <div class="stat-info">
+                                    <span class="stat-label">Total Loans Issued</span>
+                                    <span class="stat-value" id="dash-total-loans">₹0</span>
+                                </div>
+                                <div class="stat-icon primary">
+                                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                                </div>
+                            </div>
+                            <div class="glass-card stat-card">
+                                <div class="stat-info">
+                                    <span class="stat-label">Total Paid (Collections)</span>
+                                    <span class="stat-value" id="dash-total-paid" style="color: var(--color-success);">₹0</span>
+                                </div>
+                                <div class="stat-icon success">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+                            <div class="glass-card stat-card">
+                                <div class="stat-info">
+                                    <span class="stat-label">Outstanding Balance</span>
+                                    <span class="stat-value" id="dash-total-unpaid" style="color: var(--color-warning);">₹0</span>
+                                </div>
+                                <div class="stat-icon warning">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                </div>
+                            </div>
+                            <div class="glass-card stat-card">
+                                <div class="stat-info">
+                                    <span class="stat-label">Total Members</span>
+                                    <span class="stat-value" id="dash-total-members">0</span>
+                                </div>
+                                <div class="stat-icon danger" style="background: rgba(226, 91, 56, 0.12); color: var(--color-primary-light); border-color: rgba(226, 91, 56, 0.2);">
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Today's Stats Cards -->
+                        <div style="margin-top: 32px; margin-bottom: 16px;">
+                            <h3 style="display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 700; color: var(--text-dark);">
+                                <i class="fa-solid fa-calendar-day" style="color: var(--color-primary-light);"></i> Today's Business Summary
+                            </h3>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="glass-card stat-card">
+                                <div class="stat-info">
+                                    <span class="stat-label">New Members Today</span>
+                                    <span class="stat-value" id="dash-today-members">0</span>
+                                </div>
+                                <div class="stat-icon primary">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </div>
+                            </div>
+                            <div class="glass-card stat-card">
+                                <div class="stat-info">
+                                    <span class="stat-label">Amount Given Today</span>
+                                    <span class="stat-value" id="dash-today-amount" style="color: var(--color-success);">₹0</span>
+                                </div>
+                                <div class="stat-icon success">
+                                    <i class="fa-solid fa-money-bill-transfer"></i>
+                                </div>
+                            </div>
+                            <div class="glass-card stat-card">
+                                <div class="stat-info">
+                                    <span class="stat-label">Total Interest Today</span>
+                                    <span class="stat-value" id="dash-today-interest" style="color: var(--color-warning);">₹0</span>
+                                </div>
+                                <div class="stat-icon warning">
+                                    <i class="fa-solid fa-percent"></i>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <!-- Firewatch/Winter Theme Lookout Tower Status Widget -->
+                        <div id="lookout-status-widget" class="glass-card">
+                            <h3 style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-tower-observation" style="color: var(--color-primary); font-size: 16px;"></i>
+                                <span style="font-size: 15px; font-weight: 700; color: var(--text-dark);" id="widget-title">Two Forks Lookout Tower Status</span>
+                            </h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Lookout Post</span>
+                                    <span style="font-size: 15px; font-weight: 700; color: #ffffff;" id="widget-post"><i class="fa-solid fa-map-pin" style="color: var(--color-primary); margin-right: 6px;"></i> Sector 15 (Wyoming)</span>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;" id="widget-threat-label">Wildfire Threat</span>
+                                    <span style="font-size: 15px; font-weight: 700; color: var(--color-success);" id="widget-threat"><i class="fa-solid fa-leaf" style="margin-right: 6px;"></i> Low / Stable</span>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Delilah Radio</span>
+                                    <span style="font-size: 15px; font-weight: 700; color: var(--color-secondary);" id="widget-radio"><i class="fa-solid fa-broadcast-tower" style="margin-right: 6px;"></i> Channel 3 (Active)</span>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;" id="widget-henry-label">Henry's Status</span>
+                                    <span style="font-size: 15px; font-weight: 700; color: #ffffff;" id="widget-henry"><i class="fa-solid fa-user-ninja" style="color: var(--color-primary-light); margin-right: 6px;"></i> Vigilant</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Map and Recent activity -->
+                        <div class="dashboard-grid">
+                            <div class="glass-card">
+                                <h3 style="margin-bottom: 16px;"><i class="fa-solid fa-map-location-dot"></i> Daily Collection Hotspots</h3>
+                                <div class="map-wrapper" id="dashboard-collections-map"></div>
+                            </div>
+                            <div class="glass-card" style="display: flex; flex-direction: column;">
+                                <h3 style="margin-bottom: 16px;"><i class="fa-solid fa-receipt"></i> Recent Collections</h3>
+                                <div class="table-container" style="flex-grow: 1; max-height: 290px; overflow-y: auto;">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Member</th>
+                                                <th>Amount</th>
+                                                <th>Location</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-recent-collections">
+                                            <tr>
+                                                <td colspan="3" style="text-align: center; color: var(--text-muted);">No collections recorded today</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: MENTOR DATA CENTER -->
+                <div id="view-mentor-center" class="app-view">
+                    <div class="glass-card" style="margin-bottom: 24px; padding: 20px;">
+                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(135deg, var(--color-primary), #d97706); display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; box-shadow: 0 4px 14px rgba(226, 91, 56, 0.35);">
+                                    <i class="fa-solid fa-book-bookmark"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0 0 4px 0;">Mentor Line Books Manager</h3>
+                                    <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+                                        Complete synchronization with MAL.EXE: Books 1–55, Active (New) & Archive (OLD) MDBs
+                                    </p>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-secondary" id="btn-mentor-scan-trigger">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Refresh Line Books
+                                </button>
+                                <button type="button" class="btn btn-wood" id="btn-mentor-import-all">
+                                    <i class="fa-solid fa-cloud-arrow-down"></i> Sync / Import All Lines
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Status Bar -->
+                        <div id="mentor-status-banner" style="margin-top: 16px; padding: 12px 16px; border-radius: 10px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
+                            <div style="display: flex; align-items: center; gap: 8px; color: #10b981; font-weight: 600;">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span id="mentor-status-text">TDATA Connected: Ready to scan and synchronize line books.</span>
+                            </div>
+                            <div style="display: flex; gap: 16px; font-size: 12px; color: var(--text-muted);">
+                                <span>Active Books: <strong id="mentor-stat-active-count" style="color: var(--text-dark);">--</strong></span>
+                                <span>Archived Books: <strong id="mentor-stat-archived-count" style="color: var(--text-dark);">--</strong></span>
+                                <span>Total Loans: <strong id="mentor-stat-total-loans" style="color: var(--text-dark);">--</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Folder Tabs: Active (New) vs Archive (OLD) -->
+                        <div style="display: flex; gap: 8px; margin-top: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                            <button type="button" class="tab-btn active" id="tab-mentor-new" style="padding: 8px 18px; border-radius: 8px; border: none; font-weight: 700; font-size: 13px; cursor: pointer; background: var(--color-primary); color: white; transition: all 0.2s;">
+                                <i class="fa-solid fa-folder-open" style="margin-right: 6px;"></i> Active Line Books (TDATA\New)
+                            </button>
+                            <button type="button" class="tab-btn" id="tab-mentor-old" style="padding: 8px 18px; border-radius: 8px; border: 1px solid var(--border-color); font-weight: 700; font-size: 13px; cursor: pointer; background: var(--bg-card); color: var(--text-main); transition: all 0.2s;">
+                                <i class="fa-solid fa-box-archive" style="margin-right: 6px;"></i> Archived Books (TDATA\OLD)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Line Books Grid -->
+                    <div id="mentor-lines-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+                        <div class="glass-card" style="text-align: center; padding: 40px; color: var(--text-muted); grid-column: 1 / -1;">
+                            <i class="fa-solid fa-spinner fa-spin" style="font-size: 28px; margin-bottom: 12px; color: var(--color-primary);"></i>
+                            <p>Loading Mentor line books...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: RAPID DAILY POSTING (KEYBOARD-FIRST) -->
+                <div id="view-rapid-posting" class="app-view">
+                    <div class="split-layout" style="grid-template-columns: 1fr 1.2fr; gap: 24px;">
+                        <!-- Left Panel: Keyboard Fast Entry -->
+                        <div class="glass-card" style="padding: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #ea580c, #f59e0b); display: flex; align-items: center; justify-content: center; color: white; font-size: 18px;">
+                                        <i class="fa-solid fa-bolt-lightning"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;">Rapid Daily Posting</h3>
+                                        <span style="font-size: 11px; color: var(--text-muted);">Keyboard-First Counter & Route Collection</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted);">
+                                    <i class="fa-solid fa-volume-high" id="rapid-audio-icon" style="color: var(--color-success); cursor: pointer;" title="Toggle audio chime"></i>
+                                    <span>Chime</span>
+                                </div>
+                            </div>
+
+                            <!-- Target Line Indicator -->
+                            <div style="background: rgba(234, 88, 12, 0.08); border: 1px solid rgba(234, 88, 12, 0.25); border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 12px; font-weight: 600; color: var(--text-main);">
+                                    Active Book: <strong id="rapid-active-line-label" style="color: var(--color-primary); font-size: 14px;">Line 1</strong>
+                                </span>
+                                <span class="badge badge-primary" id="rapid-active-folder-label">Active (New)</span>
+                            </div>
+
+                            <!-- Rapid Posting Form -->
+                            <form id="rapid-posting-form" autocomplete="off">
+                                <div class="form-group" style="margin-bottom: 16px;">
+                                    <label for="rapid-ano-input" style="font-weight: 800; font-size: 13px; color: var(--text-dark); display: flex; justify-content: space-between;">
+                                        <span><i class="fa-solid fa-hashtag" style="color: var(--color-primary);"></i> Borrower / Account No. (ANO)</span>
+                                        <span style="font-size: 11px; font-weight: 600; color: var(--color-primary);">Press [Enter] to Search</span>
+                                    </label>
+                                    <div style="position: relative;">
+                                        <input type="text" id="rapid-ano-input" placeholder="e.g. A12, B05, 39..." required autofocus style="font-size: 20px; font-weight: 800; letter-spacing: 0.05em; padding: 14px 16px; border-radius: 12px; width: 100%; text-transform: uppercase; border: 2px solid var(--color-primary); background: var(--bg-main); color: var(--text-dark);">
+                                        <div id="rapid-ano-suggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; box-shadow: var(--shadow-lg); z-index: 1000; max-height: 180px; overflow-y: auto;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Loanee Snapshot Card -->
+                                <div id="rapid-loanee-card" style="display: none; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                        <div>
+                                            <h4 id="rapid-card-name" style="font-size: 15px; font-weight: 800; color: var(--text-dark); margin: 0 0 2px 0;">--</h4>
+                                            <span id="rapid-card-village" style="font-size: 12px; color: var(--text-muted);"><i class="fa-solid fa-location-dot"></i> --</span>
+                                        </div>
+                                        <span id="rapid-card-status-badge" class="badge badge-success">On Schedule</span>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; text-align: center; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                                        <div>
+                                            <span style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); display: block;">Total Loan</span>
+                                            <strong id="rapid-card-loan-amt" style="font-size: 13px; color: var(--text-dark);">₹0</strong>
+                                        </div>
+                                        <div>
+                                            <span style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); display: block;">Paid so far</span>
+                                            <strong id="rapid-card-paid-amt" style="font-size: 13px; color: var(--color-success);">₹0</strong>
+                                        </div>
+                                        <div>
+                                            <span style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); display: block;">Balance</span>
+                                            <strong id="rapid-card-balance-amt" style="font-size: 13px; color: var(--color-danger);">₹0</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Collection Amount & Date -->
+                                <div class="form-grid" style="grid-template-columns: 1.3fr 1fr; gap: 12px; margin-bottom: 16px;">
+                                    <div class="form-group">
+                                        <label for="rapid-amount-input" style="font-size: 12px; font-weight: 700; color: var(--text-dark);">
+                                            <i class="fa-solid fa-indian-rupee-sign" style="color: var(--color-success);"></i> Amount (DA)
+                                        </label>
+                                        <input type="number" id="rapid-amount-input" placeholder="0" min="1" step="any" required style="font-size: 18px; font-weight: 800; padding: 12px; border-radius: 10px; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-dark);">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="rapid-date-input" style="font-size: 12px; font-weight: 700; color: var(--text-dark);">
+                                            <i class="fa-solid fa-calendar"></i> Date
+                                        </label>
+                                        <input type="date" id="rapid-date-input" required style="font-size: 13px; padding: 12px; border-radius: 10px; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-dark);">
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-wood" id="btn-rapid-post-submit" style="width: 100%; padding: 14px; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <i class="fa-solid fa-circle-check"></i> Post Payment [Enter]
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Right Panel: Session Batch Ledger -->
+                        <div class="glass-card" style="padding: 24px; display: flex; flex-direction: column;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 style="font-size: 15px; font-weight: 800; color: var(--text-dark); margin: 0;">
+                                    <i class="fa-solid fa-list-check" style="color: var(--color-primary);"></i> Session Collection Ledger
+                                </h3>
+                                <button type="button" class="btn btn-secondary btn-sm" id="btn-rapid-clear-batch" style="padding: 4px 10px; font-size: 11px;">
+                                    Clear Session
+                                </button>
+                            </div>
+
+                            <!-- Session Tally Cards -->
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
+                                <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; text-align: center;">
+                                    <span style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); display: block;">Session Total</span>
+                                    <strong id="rapid-session-total" style="font-size: 16px; font-weight: 800; color: var(--color-success);">₹0</strong>
+                                </div>
+                                <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; text-align: center;">
+                                    <span style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); display: block;">Members Posted</span>
+                                    <strong id="rapid-session-count" style="font-size: 16px; font-weight: 800; color: var(--text-dark);">0</strong>
+                                </div>
+                                <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; text-align: center;">
+                                    <span style="font-size: 10px; text-transform: uppercase; color: var(--text-muted); display: block;">Avg / Loanee</span>
+                                    <strong id="rapid-session-avg" style="font-size: 16px; font-weight: 800; color: var(--color-primary);">₹0</strong>
+                                </div>
+                            </div>
+
+                            <!-- Table of Session Collections -->
+                            <div class="table-container" style="flex-grow: 1; max-height: 420px; overflow-y: auto;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>ANO</th>
+                                            <th>Member Name</th>
+                                            <th>Amount</th>
+                                            <th>Time</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rapid-session-table-body">
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px 10px;">
+                                                Type an account number on the left and hit Enter to post collections rapidly.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: MENTOR REPORTS & DUE LIST -->
+                <div id="view-due-reports" class="app-view">
+                    <!-- Reports Sub-navigation Tabs -->
+                    <div class="glass-card" style="margin-bottom: 20px; padding: 14px 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="reports-suite-tabs">
+                                <button type="button" class="btn btn-wood btn-sm report-tab-btn active" data-report="due-list">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Due & Deficit Report (DUE)
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-sm report-tab-btn" data-report="balance-sheet">
+                                    <i class="fa-solid fa-scale-balanced"></i> Portfolio Trial Balance
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-sm report-tab-btn" data-report="village-summary">
+                                    <i class="fa-solid fa-map-location-dot"></i> Village Route Summary
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-sm report-tab-btn" data-report="pending-list">
+                                    <i class="fa-solid fa-clock-rotate-left"></i> Pending Days (PEND)
+                                </button>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-secondary btn-sm" id="btn-print-current-report">
+                                    <i class="fa-solid fa-print"></i> Print Sheet
+                                </button>
+                                <button type="button" class="btn btn-secondary btn-sm" id="btn-export-report-csv">
+                                    <i class="fa-solid fa-file-csv"></i> Export CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Sub-View 1: DUE & DEFICIT LIST -->
+                    <div id="subview-due-list" class="report-subview">
+                        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                            <div class="glass-card" style="padding: 16px; border-left: 4px solid var(--color-danger);">
+                                <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted);">Total Deficit Overdue</span>
+                                <h3 id="due-stat-total-deficit" style="font-size: 22px; font-weight: 800; color: var(--color-danger); margin-top: 4px;">₹0</h3>
+                            </div>
+                            <div class="glass-card" style="padding: 16px; border-left: 4px solid #ea580c;">
+                                <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted);">Defaulters (2+ Weeks)</span>
+                                <h3 id="due-stat-defaulters-count" style="font-size: 22px; font-weight: 800; color: #ea580c; margin-top: 4px;">0</h3>
+                            </div>
+                            <div class="glass-card" style="padding: 16px; border-left: 4px solid var(--color-warning);">
+                                <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted);">Due (1 Week Delay)</span>
+                                <h3 id="due-stat-due-count" style="font-size: 22px; font-weight: 800; color: var(--color-warning); margin-top: 4px;">0</h3>
+                            </div>
+                            <div class="glass-card" style="padding: 16px; border-left: 4px solid var(--color-primary);">
+                                <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted);">Total Outstanding Portfolio</span>
+                                <h3 id="due-stat-total-outstanding" style="font-size: 22px; font-weight: 800; color: var(--color-primary); margin-top: 4px;">₹0</h3>
+                            </div>
+                        </div>
+
+                        <!-- Due Filter Bar -->
+                        <div class="glass-card" style="padding: 14px 20px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="font-size: 12px; font-weight: 700; color: var(--text-dark);">Filter Line:</label>
+                                <select id="due-filter-line" class="form-input" style="padding: 6px 12px; font-size: 13px;">
+                                    <option value="">-- All Lines --</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="font-size: 12px; font-weight: 700; color: var(--text-dark);">Village:</label>
+                                <select id="due-filter-village" class="form-input" style="padding: 6px 12px; font-size: 13px;">
+                                    <option value="">-- All Villages --</option>
+                                </select>
+                            </div>
+                            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--text-dark); cursor: pointer;">
+                                <input type="checkbox" id="due-filter-defaulters-only"> Defaulters Only (PW &ge; 2)
+                            </label>
+                        </div>
+
+                        <!-- Due Table -->
+                        <div class="glass-card table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ANO</th>
+                                        <th>Loanee Name</th>
+                                        <th>Village / Address</th>
+                                        <th>Line</th>
+                                        <th>Loan Amt</th>
+                                        <th>Paid Amt</th>
+                                        <th>Balance</th>
+                                        <th>DA</th>
+                                        <th>AW (Elap)</th>
+                                        <th>PDW (Pd)</th>
+                                        <th>PW (Pend)</th>
+                                        <th>DAMT (Deficit)</th>
+                                        <th>Status</th>
+                                        <th>Passbook</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="due-table-body">
+                                    <tr>
+                                        <td colspan="14" style="text-align: center; color: var(--text-muted); padding: 30px;">Loading Due List...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Report Sub-View 2: BALANCE SHEET / TRIAL BALANCE -->
+                    <div id="subview-balance-sheet" class="report-subview" style="display: none;">
+                        <div class="glass-card" style="margin-bottom: 20px; padding: 20px;">
+                            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 14px; color: var(--text-dark);">
+                                <i class="fa-solid fa-scale-balanced" style="color: var(--color-primary);"></i> Portfolio Trial Balance & Ledger Totals
+                            </h3>
+                            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;">
+                                <div style="background: var(--bg-main); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+                                    <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); display: block;">Total Members</span>
+                                    <strong id="tb-total-members" style="font-size: 20px; color: var(--text-dark);">0</strong>
+                                </div>
+                                <div style="background: var(--bg-main); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+                                    <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); display: block;">Total Disbursed (AMT)</span>
+                                    <strong id="tb-sum-amt" style="font-size: 20px; color: var(--color-primary);">₹0</strong>
+                                </div>
+                                <div style="background: var(--bg-main); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+                                    <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); display: block;">Total Collected (PAMT)</span>
+                                    <strong id="tb-sum-pamt" style="font-size: 20px; color: var(--color-success);">₹0</strong>
+                                </div>
+                                <div style="background: var(--bg-main); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+                                    <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); display: block;">Outstanding (BAMT)</span>
+                                    <strong id="tb-sum-bamt" style="font-size: 20px; color: var(--color-danger);">₹0</strong>
+                                </div>
+                                <div style="background: var(--bg-main); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+                                    <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); display: block;">Recovery Rate</span>
+                                    <strong id="tb-recovery-rate" style="font-size: 20px; color: #10b981;">0%</strong>
+                                </div>
+                            </div>
+
+                            <h4 style="font-size: 14px; font-weight: 700; color: var(--text-dark); margin-bottom: 12px;">Village-Wise Exposure Breakdown</h4>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Village</th>
+                                            <th>Loanees</th>
+                                            <th>Total Disbursed</th>
+                                            <th>Total Paid</th>
+                                            <th>Outstanding Balance</th>
+                                            <th>Daily/Weekly Demand</th>
+                                            <th>Recovery %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tb-village-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Report Sub-View 3: VILLAGE ROUTE SUMMARY -->
+                    <div id="subview-village-summary" class="report-subview" style="display: none;">
+                        <div class="glass-card table-container">
+                            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 14px; color: var(--text-dark);">
+                                <i class="fa-solid fa-route" style="color: var(--color-primary);"></i> Village Route Sequence & Coverage
+                            </h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Route Order (SNO)</th>
+                                        <th>Line</th>
+                                        <th>Village Name</th>
+                                        <th>Active Members</th>
+                                        <th>Outstanding Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="village-route-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Report Sub-View 4: PENDING DAYS LIST -->
+                    <div id="subview-pending-list" class="report-subview" style="display: none;">
+                        <div class="glass-card table-container">
+                            <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 14px; color: var(--text-dark);">
+                                <i class="fa-solid fa-clock-rotate-left" style="color: var(--color-danger);"></i> Overdue & Pending Aging Report
+                            </h3>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ANO</th>
+                                        <th>Member Name</th>
+                                        <th>Village</th>
+                                        <th>Line</th>
+                                        <th>Disbursed Date</th>
+                                        <th>Maturity Date</th>
+                                        <th>Loan Amt</th>
+                                        <th>Paid</th>
+                                        <th>Balance</th>
+                                        <th>Pending Slots</th>
+                                        <th>Deficit Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pending-list-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: NEW LOANS -->
+                <div id="view-new-loans" class="app-view">
+                    <div class="split-layout">
+                        <!-- Left Entry Form -->
+                        <div class="glass-card scrollable-form-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 id="loan-form-action"><i class="fa-solid fa-pen-to-square"></i> Create Loan Account</h3>
+                                <span class="badge badge-primary" id="loan-sl-indicator">Sl.No: Auto</span>
+                            </div>
+                            
+                            <form id="loan-entry-form">
+                                <input type="hidden" id="loan-id-field">
+                                <div class="form-grid" style="grid-template-columns: repeat(2, 1fr);">
+                                    <div class="form-group">
+                                        <label for="loan-slno">Sl.No</label>
+                                        <input type="text" id="loan-slno" placeholder="Auto" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-name">Name</label>
+                                        <input type="text" id="loan-name" placeholder="Full name of borrower" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-phone"><i class="fa-solid fa-phone"></i> Mobile / Phone Number</label>
+                                        <input type="text" id="loan-phone" placeholder="Enter 10-digit mobile number">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                            <label for="loan-address" style="margin-bottom: 0;">Address Details</label>
+                                            <button type="button" class="btn btn-secondary btn-sm" id="btn-loan-use-gps" style="padding: 6px 12px; font-size: 11px; display: flex; align-items: center; gap: 6px; background: rgba(226, 91, 56, 0.08); color: var(--color-primary-light); border: 1px solid rgba(226, 91, 56, 0.2);">
+                                                <i class="fa-solid fa-location-crosshairs"></i> Use Current Location
+                                            </button>
+                                        </div>
+                                        <textarea id="loan-address" rows="2" placeholder="Street, house number, etc." required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-area"><i class="fa-solid fa-location-crosshairs"></i> Target Village / Area</label>
+                                        <select id="loan-area" required>
+                                            <option value="">-- Select Village/Area --</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-frequency">Days | Weeks | Months</label>
+                                        <select id="loan-frequency" required>
+                                            <option value="Days">Daily Installments</option>
+                                            <option value="Weeks" selected>Weekly Installments</option>
+                                            <option value="Months">Monthly Installments</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-from-date">From Date</label>
+                                        <input type="date" id="loan-from-date" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-to-date">To Date</label>
+                                        <input type="date" id="loan-to-date" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-principal">Principal Amount (₹)</label>
+                                        <input type="number" id="loan-principal" placeholder="e.g. 10000" required min="100">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-interest">Interest Amount (₹)</label>
+                                        <input type="number" id="loan-interest" placeholder="e.g. 2000" required min="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-duration">Duration (Days)</label>
+                                        <input type="number" id="loan-duration" placeholder="e.g. 100" required min="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-amount">Total Loan Amount (₹)</label>
+                                        <input type="number" id="loan-amount" readonly style="color: var(--color-primary-light); font-weight: 700;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-inst-amount">Daily Installment Amount (₹)</label>
+                                        <input type="number" id="loan-inst-amount" readonly style="color: var(--color-success); font-weight: 700;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-unpaid-amount">Unpaid Amount (₹)</label>
+                                        <input type="number" id="loan-unpaid-amount" value="0" readonly style="color: var(--color-warning); font-weight: 700;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-paid-amount">Paid Amount (₹)</label>
+                                        <input type="number" id="loan-paid-amount" value="0" readonly style="color: var(--color-success); font-weight: 700;">
+                                    </div>
+                                    <div class="form-group full-width" style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 8px;">
+                                        <label><i class="fa-solid fa-map-location-dot"></i> Loan Location (Auto-Pin on Address Entry)</label>
+                                        <div class="map-wrapper" id="loan-entry-map" style="height: 180px; border-radius: 12px; margin-top: 8px; border: 1px solid var(--border-color);"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-lat">Latitude</label>
+                                        <input type="number" step="any" id="loan-lat" placeholder="Auto-pinned lat" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loan-lng">Longitude</label>
+                                        <input type="number" step="any" id="loan-lng" placeholder="Auto-pinned lng" readonly>
+                                    </div>
+                                    <div class="form-group full-width" style="display: flex; flex-direction: column; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 8px;">
+                                        <div class="form-group">
+                                            <label for="loan-photo-cust"><i class="fa-solid fa-camera"></i> Customer Photo <span style="color: var(--color-danger);">*</span></label>
+                                            <div style="display: flex; gap: 12px; align-items: center;">
+                                                <div id="cust-photo-preview" style="width: 45px; height: 45px; border-radius: 50%; border: 2px dashed var(--border-color); background: rgba(17, 24, 39, 0.45); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                                    <i class="fa-solid fa-user" style="color: var(--text-muted);"></i>
+                                                </div>
+                                                <input type="file" id="loan-photo-cust" accept="image/*" required style="font-size: 11px; padding: 6px; flex-grow: 1;">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="loan-photo-house"><i class="fa-solid fa-house"></i> House Photo (Optional)</label>
+                                            <div style="display: flex; gap: 12px; align-items: center;">
+                                                <div id="house-photo-preview" style="width: 45px; height: 45px; border-radius: 8px; border: 2px dashed var(--border-color); background: rgba(17, 24, 39, 0.45); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                                    <i class="fa-solid fa-house" style="color: var(--text-muted);"></i>
+                                                </div>
+                                                <input type="file" id="loan-photo-house" accept="image/*" style="font-size: 11px; padding: 6px; flex-grow: 1;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="btn-group" style="justify-content: space-between; width: 100%;">
+                                    <div class="btn-group">
+                                        <button type="submit" class="btn btn-wood" id="btn-save-loan">
+                                            <i class="fa-solid fa-circle-check"></i> Entry / Save
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" id="btn-clear-loan">Clear</button>
+                                    </div>
+                                    <div class="btn-group" id="owner-delete-btn-container">
+                                        <button type="button" class="btn btn-danger" id="btn-delete-loan" style="display: none;">
+                                            <i class="fa-solid fa-trash-can"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- Navigation buttons for Owner to navigate entries -->
+                            <div class="form-navigation" id="loan-navigation-container">
+                                <button class="btn btn-secondary nav-btn" id="btn-nav-first" title="First Entry"><i class="fa-solid fa-angles-left"></i></button>
+                                <button class="btn btn-secondary nav-btn" id="btn-nav-prev" title="Previous Entry"><i class="fa-solid fa-angle-left"></i></button>
+                                <button class="btn btn-secondary nav-btn" id="btn-nav-next" title="Next Entry"><i class="fa-solid fa-angle-right"></i></button>
+                                <button class="btn btn-secondary nav-btn" id="btn-nav-last" title="Last Entry"><i class="fa-solid fa-angles-right"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Right List/View Panel -->
+                        <div class="glass-card" style="display: flex; flex-direction: column; align-self: stretch;">
+                            <h3><i class="fa-solid fa-list-check"></i> Recent Loan Allocations</h3>
+                            <div class="filter-bar" style="margin-top: 16px; margin-bottom: 16px;">
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <input type="text" id="new-loans-search" placeholder="Type name or address to filter...">
+                                </div>
+                            </div>
+                            <div class="table-container" style="flex-grow: 1; max-height: 380px; overflow-y: auto;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Sl.No</th>
+                                            <th>Name</th>
+                                            <th>Area</th>
+                                            <th>Amount</th>
+                                            <th>Frequency</th>
+                                            <th class="owner-admin-element">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="new-loans-table-body">
+                                        <!-- Dynamic entries -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Collections Section (below split-layout) -->
+                    <div class="glass-card" style="margin-top: 24px; display: flex; flex-direction: column;">
+                        <h3><i class="fa-solid fa-receipt"></i> Recent Collections</h3>
+                        <div class="table-container" style="margin-top: 16px; max-height: 380px; overflow-y: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Sl.No</th>
+                                        <th>Member</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="new-loans-recent-collections">
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 12px;">No collections recorded yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: DAILY POSTING -->
+                <div id="view-daily-posting" class="app-view">
+                    <div class="daily-posting-grid">
+                        
+                        <!-- Left Column: Stacked Entry Form & Calendar -->
+                        <div class="daily-posting-left">
+                            
+
+                            
+                            <!-- Collection Info & Entry -->
+                            <div class="glass-card" style="display: flex; flex-direction: column; gap: 16px;">
+                                <h3><i class="fa-solid fa-hand-holding-dollar"></i> Recording Collection</h3>
+                                
+                                <div class="form-group">
+                                    <label for="post-slno-search">Borrower Serial Number (Sl.No)</label>
+                                    <input type="text" id="post-slno-search" placeholder="Enter Sl.No (e.g. A230)" required style="padding: 14px; font-size: 16px; font-weight: 700; text-align: center; border-color: var(--color-primary); box-shadow: var(--shadow-glow);">
+                                    <input type="hidden" id="post-loan-id">
+                                </div>
+                                
+                                <div id="post-member-details-card" style="display: none; background: var(--bg-main); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 13px;">
+                                     <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                                         <div id="post-detail-photo" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--border-color); background: var(--bg-card); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                             <i class="fa-solid fa-user" style="color: var(--text-muted);"></i>
+                                         </div>
+                                         <div style="flex-grow: 1;">
+                                             <div style="font-weight: bold; color: var(--text-dark);" id="post-detail-name">Member Name</div>
+                                             <div style="margin-top: 4px;"><span class="badge badge-success" id="post-detail-area">Area</span></div>
+                                         </div>
+                                         <div id="post-detail-house" style="width: 50px; height: 50px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="House View">
+                                             <i class="fa-solid fa-house" style="color: var(--text-muted); font-size: 11px;"></i>
+                                         </div>
+                                     </div>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 8px; margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                                        <div>
+                                            <div style="color: var(--text-muted); font-size: 11px;">LOAN</div>
+                                            <div style="font-weight: 700; color: var(--text-dark);" id="post-detail-loan">₹0</div>
+                                        </div>
+                                        <div>
+                                            <div style="color: var(--text-muted); font-size: 11px;">PAID</div>
+                                            <div style="font-weight: 700; color: var(--color-success);" id="post-detail-paid">₹0</div>
+                                        </div>
+                                        <div>
+                                            <div style="color: var(--text-muted); font-size: 11px;">UNPAID</div>
+                                            <div style="font-weight: 700; color: var(--color-warning);" id="post-detail-unpaid">₹0</div>
+                                        </div>
+                                        <div style="display: none;">
+                                            <div style="color: var(--text-muted); font-size: 11px;">REMAINDER</div>
+                                            <div style="font-weight: 700; color: var(--color-danger);" id="post-detail-remainder">₹0</div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 12px; font-size: 11px; color: var(--text-muted); text-align: center;">
+                                        Installment: <span style="color: var(--text-dark); font-weight: 600;" id="post-detail-inst">₹0</span> | Frequency: <span style="color: var(--text-dark); font-weight: 600;" id="post-detail-freq">Weeks</span>
+                                    </div>
+                                    <div style="margin-top: 4px; font-size: 11px; color: var(--text-muted); text-align: center;">
+                                        From: <span style="color: var(--text-dark); font-weight: 600;" id="post-detail-from-date">-</span> | To: <span style="color: var(--text-dark); font-weight: 600;" id="post-detail-to-date">-</span>
+                                    </div>
+                                </div>
+    
+                                <form id="posting-entry-form">
+                                    <div class="form-group" style="margin-bottom: 12px;">
+                                        <label for="post-date">Collection Date</label>
+                                        <input type="date" id="post-date" required>
+                                    </div>
+                                    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                            <label for="post-expected-amount">Expected Amt (₹)</label>
+                                            <input type="number" id="post-expected-amount" readonly style="background: #f4ebff; color: var(--text-muted); cursor: not-allowed; font-weight: 700; padding: 10px;">
+                                        </div>
+                                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                            <label for="post-amount">Actual Paid (₹)</label>
+                                            <input type="number" id="post-amount" placeholder="₹ Enter amount" min="0" style="padding: 10px;">
+                                        </div>
+                                    </div>
+                                    <div id="post-deficit-container" style="display: none; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; padding: 10px; font-size: 12px; margin-bottom: 16px; align-items: center; justify-content: space-between;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <i class="fa-solid fa-triangle-exclamation" style="color: var(--color-warning);"></i>
+                                            <span style="color: var(--text-muted);">Deficit detected:</span>
+                                        </div>
+                                        <span id="post-deficit-amount" style="color: var(--color-warning); font-weight: 700;">₹0</span>
+                                    </div>
+                                    
+                                    <div id="geolocation-status" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; font-size: 11px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fa-solid fa-location-crosshairs" style="color: var(--text-muted);" id="geo-icon"></i>
+                                        <span id="geo-text" style="color: var(--text-muted);">Requesting GPS coordinate tags...</span>
+                                    </div>
+    
+                                    <div class="btn-group" style="width: 100%;">
+                                        <button type="submit" class="btn btn-wood" style="flex-grow: 1;" id="btn-save-posting">
+                                            <i class="fa-solid fa-circle-check"></i> Post Collection
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" id="btn-clear-posting">Clear</button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <!-- Interactive Calendar -->
+                            <div class="glass-card" style="display: flex; flex-direction: column; gap: 16px;">
+                                <h3><i class="fa-solid fa-calendar-days"></i> Payment Calendar</h3>
+                                <div class="calendar-container">
+                                    <div class="calendar-header">
+                                        <span class="calendar-month-title" id="calendar-month-year">June 2026</span>
+                                        <div class="calendar-nav">
+                                            <button class="calendar-nav-btn" id="btn-cal-prev"><i class="fa-solid fa-chevron-left"></i></button>
+                                            <button class="calendar-nav-btn" id="btn-cal-next"><i class="fa-solid fa-chevron-right"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="calendar-grid" id="calendar-cells-grid">
+                                        <!-- Dynamic dates -->
+                                    </div>
+                                    <div class="calendar-legend">
+                                        <div class="legend-item">
+                                            <div class="legend-color" style="background: rgba(226, 91, 56, 0.12); border: 1px solid var(--color-primary);"></div>
+                                            <span>Paid Day</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color" style="background: rgba(217, 70, 239, 0.12); border: 1px solid var(--color-danger);"></div>
+                                            <span>Unpaid Target</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="over-days-card" style="display: none; background: rgba(226, 91, 56, 0.08); border: 1px solid rgba(226, 91, 56, 0.2); border-radius: 12px; padding: 12px; font-size: 12px; text-align: center; color: var(--color-primary);">
+                                    <i class="fa-solid fa-circle-exclamation" style="color: var(--color-danger); margin-right: 6px;"></i>
+                                    <span id="over-days-text">Overdue installments detected!</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column: Grid of postings for this member -->
+                        <div class="daily-posting-right">
+                            <div class="glass-card" style="display: flex; flex-direction: column; align-self: stretch; gap: 16px; height: 100%;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <h3><i class="fa-solid fa-history"></i> Postings Grid</h3>
+                                    <div style="display: flex; gap: 6px; align-items: center;">
+                                        <button class="btn btn-secondary btn-icon-only" id="btn-print-receipt-posting" title="Print Collection Receipt" style="width: 35px; height: 35px; border-radius: 8px;">
+                                            <i class="fa-solid fa-print"></i>
+                                        </button>
+                                        <button class="btn btn-success btn-icon-only" id="btn-share-receipt-posting" title="Share Collection Receipt via WhatsApp/Web Share" style="width: 35px; height: 35px; border-radius: 8px; background: var(--color-success); border-color: var(--color-success);">
+                                            <i class="fa-brands fa-whatsapp"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="table-container" style="flex-grow: 1; max-height: 520px; overflow-y: auto;">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 15%;">S.No</th>
+                                                <th style="width: 25%;">Expected</th>
+                                                <th style="width: 25%;">Paid</th>
+                                                <th style="width: 25%;" id="posting-grid-date-header">Date</th>
+                                                <th style="width: 10%;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="postings-table-body">
+                                            <tr>
+                                                <td colspan="5" style="text-align: center; color: var(--text-muted);">Please enter a serial number to view records</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Actions footer -->
+                                <div class="btn-group" style="justify-content: flex-end; margin-top: 10px;">
+                                    <button class="btn btn-secondary btn-sm" id="btn-refresh-postings">
+                                        <i class="fa-solid fa-rotate"></i> Refresh
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+    
+                    </div>
+
+                    <!-- Daily Expenses Section -->
+                    <div class="glass-card" style="margin-top: 24px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="margin: 0;"><i class="fa-solid fa-receipt" style="color: var(--color-danger); margin-right: 6px;"></i> Daily Expenses</h3>
+                            <span class="badge badge-warning" id="expense-total-indicator">Total: ₹0</span>
+                        </div>
+                        
+                        <form id="expense-entry-form" style="display: grid; grid-template-columns: 1.2fr 1fr 1.5fr 1fr auto; gap: 16px; align-items: flex-end; margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label for="expense-category">Expense Type</label>
+                                <select id="expense-category" class="form-input" style="padding: 10px;" required>
+                                    <option value="" disabled selected>Select...</option>
+                                    <option value="Petrol">Petrol</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Miscellaneous">Miscellaneous</option>
+                                    <option value="custom">+ Add Custom Category...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="expense-amount">Amount (₹)</label>
+                                <input type="number" id="expense-amount" class="form-input" style="padding: 10px;" placeholder="e.g. 150" required min="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="expense-desc">Description (Optional)</label>
+                                <input type="text" id="expense-desc" class="form-input" style="padding: 10px;" placeholder="e.g. Bike refueling">
+                            </div>
+                            <div class="form-group">
+                                <label for="expense-date">Date</label>
+                                <input type="date" id="expense-date" class="form-input" style="padding: 10px;" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="padding: 12px 20px; height: 42px;">
+                                <i class="fa-solid fa-plus"></i> Add
+                            </button>
+                        </form>
+
+                        <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Expense Type</th>
+                                        <th>Amount (₹)</th>
+                                        <th>Description</th>
+                                        <th>Collector</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expenses-table-body">
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; color: var(--text-muted);">No expenses recorded for today</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 4: TOTAL MEMBERS -->
+                <div id="view-total-members" class="app-view">
+                    <div class="glass-card">
+                        <h3><i class="fa-solid fa-users"></i> Member Directory & Loan Auditing</h3>
+                        
+                        <!-- Filter Bar -->
+                        <div class="filter-bar" style="margin-top: 20px;">
+                            <div class="form-group">
+                                <label for="filter-member-name">Search Name</label>
+                                <input type="text" id="filter-member-name" placeholder="Type member name...">
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-member-area">Village / Area</label>
+                                <select id="filter-member-area">
+                                    <option value="">All Areas</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-member-date">Reference Date</label>
+                                <input type="date" id="filter-member-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-member-no">Sl.No / ID</label>
+                                <input type="text" id="filter-member-no" placeholder="Serial Number (e.g. A230)">
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-primary btn-icon-only" id="btn-search-members" title="Apply Filters">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                                <button class="btn btn-secondary btn-icon-only" id="btn-reset-member-filters" title="Reset Filters">
+                                    <i class="fa-solid fa-filter-circle-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Category Buttons -->
+                        <div class="btn-group" style="margin-bottom: 20px;">
+                            <button class="btn btn-secondary active" id="btn-filter-all-members">All Entries</button>
+                            <button class="btn btn-secondary" id="btn-filter-pending-members">
+                                <span class="legend-color" style="display:inline-block; width:8px; height:8px; background:var(--color-warning); border-radius:50%; margin-right:6px;"></span>
+                                Pending (Active)
+                            </button>
+                            <button class="btn btn-secondary" id="btn-filter-over-members">
+                                <span class="legend-color" style="display:inline-block; width:8px; height:8px; background:var(--color-danger); border-radius:50%; margin-right:6px;"></span>
+                                Over Days (Overdue)
+                            </button>
+                            <button class="btn btn-secondary" id="btn-filter-completed-members">
+                                <span class="legend-color" style="display:inline-block; width:8px; height:8px; background:var(--color-success); border-radius:50%; margin-right:6px;"></span>
+                                Done (Paid)
+                            </button>
+                            <button class="btn btn-secondary" id="btn-filter-paid-today">
+                                <span class="legend-color" style="display:inline-block; width:8px; height:8px; background:var(--color-primary); border-radius:50%; margin-right:6px;"></span>
+                                Paid (Today)
+                            </button>
+                            <button class="btn btn-secondary" id="btn-filter-unpaid-today">
+                                <span class="legend-color" style="display:inline-block; width:8px; height:8px; background:var(--color-warning); border-radius:50%; margin-right:6px;"></span>
+                                Unpaid (Today)
+                            </button>
+                            <button class="btn btn-success" id="btn-print-members-list" style="margin-left: auto;">
+                                <i class="fa-solid fa-print"></i> Print Directory
+                            </button>
+                        </div>
+
+                        <!-- Members Table Grid -->
+                        <div class="table-container" style="max-height: 500px; overflow-y: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Sl.No</th>
+                                        <th>Photo</th>
+                                        <th>Borrower Name</th>
+                                        <th>Village/Area</th>
+                                        <th>From Date</th>
+                                        <th>To Date</th>
+                                        <th>Loan Amt (₹)</th>
+                                        <th>Paid Amt (₹)</th>
+                                        <th>Balance (₹)</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="members-list-table-body">
+                                    <!-- Dynamic entries -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 5: POSTING SLIPS -->
+                <div id="view-posting-slips" class="app-view">
+                    <div class="glass-card">
+                        <h3><i class="fa-solid fa-receipt"></i> Posting Slips generator</h3>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">
+                            Search and print transaction receipts. Filters will search individual collections recorded in the database.
+                        </p>
+
+                        <div class="filter-bar">
+                            <div class="form-group">
+                                <label for="slip-filter-start-date">Start Date</label>
+                                <input type="date" id="slip-filter-start-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="slip-filter-end-date">End Date</label>
+                                <input type="date" id="slip-filter-end-date">
+                            </div>
+                            <div class="form-group">
+                                <label for="slip-filter-area">Village / Area</label>
+                                <select id="slip-filter-area">
+                                    <option value="">All Areas</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="slip-filter-name">Member Name</label>
+                                <input type="text" id="slip-filter-name" placeholder="Filter by customer name...">
+                            </div>
+                            <button class="btn btn-primary" id="btn-search-slips">
+                                <i class="fa-solid fa-search"></i> Search Transactions
+                            </button>
+                        </div>
+
+                        <div class="table-container" style="max-height: 450px; overflow-y: auto; margin-top: 20px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Slip No</th>
+                                        <th>Borrower Name</th>
+                                        <th>Area</th>
+                                        <th>Collection Date</th>
+                                        <th>Amount (₹)</th>
+                                        <th>Collector</th>
+                                        <th>Location Check</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="slips-table-body">
+                                    <tr>
+                                        <td colspan="8" style="text-align: center; color: var(--text-muted);">Configure filters and search slips</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 6: MONTHLY LIST -->
+                <div id="view-monthly-list" class="app-view">
+                    <div style="display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 24px;">
+                        <!-- Graph View -->
+                        <div class="glass-card" style="display: flex; flex-direction: column;">
+                            <h3><i class="fa-solid fa-chart-line"></i> Annual Performance Chart</h3>
+                            <div style="flex-grow: 1; min-height: 350px; margin-top: 20px; position: relative;">
+                                <canvas id="monthlyPerformanceChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Data table summary -->
+                        <div class="glass-card" style="display: flex; flex-direction: column;">
+                            <h3><i class="fa-solid fa-table"></i> Month-wise Ledger</h3>
+                            <div class="table-container" style="flex-grow: 1; max-height: 380px; overflow-y: auto; margin-top: 16px;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Month</th>
+                                            <th>New Loans (₹)</th>
+                                            <th>Collected (₹)</th>
+                                            <th>Net Shift (₹)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="monthly-summary-table-body">
+                                        <!-- Dynamic entries -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 9: TRIAL BALANCE -->
+                <div id="view-trial-balance" class="app-view">
+                    <!-- Quick stats / balance check -->
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px;">
+                        <div class="glass-card stat-card">
+                            <span class="stat-label">Existing Capital (Cash)</span>
+                            <span class="stat-value" id="tb-existing-capital" style="color: var(--color-success); font-weight: 800;">₹0</span>
+                        </div>
+                        <div class="glass-card stat-card">
+                            <span class="stat-label">Total Capital Invested</span>
+                            <span class="stat-value" id="tb-total-capital" style="color: var(--color-primary);">₹0</span>
+                        </div>
+                        <div class="glass-card stat-card">
+                            <span class="stat-label">Amount on the Line</span>
+                            <span class="stat-value" id="tb-amount-on-line" style="color: var(--color-warning);">₹0</span>
+                        </div>
+                        <div class="glass-card stat-card">
+                            <span class="stat-label">Interest Accrued</span>
+                            <span class="stat-value" id="tb-interest-accrued" style="color: var(--color-success);">₹0</span>
+                        </div>
+                        <div class="glass-card stat-card" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <span class="stat-label" style="text-align: center;">Accrual Status</span>
+                            <div id="tb-balance-status" style="margin-top: 8px; font-weight: bold; font-size: 14px;">
+                                <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Balanced</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <!-- Trial Balance Sheet -->
+                        <div class="glass-card" style="display: flex; flex-direction: column;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="margin: 0;"><i class="fa-solid fa-scale-balanced" style="color: var(--color-primary); margin-right: 6px;"></i> Trial Balance Sheet</h3>
+                                <button class="btn btn-secondary btn-sm" id="btn-print-trial-balance">
+                                    <i class="fa-solid fa-print"></i> Print Sheet
+                                </button>
+                            </div>
+                            <div class="table-container" style="flex-grow: 1;">
+                                <table id="tb-sheet-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Account Description</th>
+                                            <th style="text-align: right; width: 25%;">Debit (Dr.)</th>
+                                            <th style="text-align: right; width: 25%;">Credit (Cr.)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tb-sheet-body">
+                                        <!-- Will populate dynamically -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr style="font-weight: bold; border-top: 2px solid var(--border-color); background: rgba(255,255,255,0.05);">
+                                            <td>Total</td>
+                                            <td id="tb-total-debits" style="text-align: right; color: var(--color-primary);">₹0.00</td>
+                                            <td id="tb-total-credits" style="text-align: right; color: var(--color-primary);">₹0.00</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Daily Interest Accrual Card -->
+                        <div class="glass-card" style="display: flex; flex-direction: column;">
+                            <h3><i class="fa-solid fa-clock-rotate-left"></i> Daily Interest Yield</h3>
+                            <p style="color: var(--text-muted); font-size: 12px; margin-top: 4px; margin-bottom: 20px;">
+                                This section shows the daily interest calculated across all active loans on the current line.
+                            </p>
+                            <div style="background: rgba(226, 91, 56, 0.08); border: 1px solid rgba(226, 91, 56, 0.2); border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 16px;">
+                                <span class="stat-label" style="display: block; font-size: 12px;">Daily Accrual Rate</span>
+                                <span class="stat-value" id="tb-daily-yield-rate" style="color: var(--color-success); font-size: 28px; font-weight: 800; display: block; margin-top: 4px;">₹0.00 / day</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 12px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                    <span>Active Loans on Line:</span>
+                                    <span id="tb-active-loans-count" style="font-weight: bold; color: var(--text-dark);">0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                    <span>Total Value on Line:</span>
+                                    <span id="tb-total-value-line" style="font-weight: bold; color: var(--text-dark);">₹0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Interest Portion Yield:</span>
+                                    <span id="tb-interest-portion" style="font-weight: bold; color: var(--text-dark);">₹0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <!-- Left block: Capital & Asset Managers -->
+                        <div class="glass-card">
+                            <h3><i class="fa-solid fa-folder-plus"></i> Record Line Transaction</h3>
+                            
+                            <!-- Unified Transaction Form -->
+                            <form id="tb-transaction-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div class="form-group">
+                                        <label for="txn-type">Transaction Type</label>
+                                        <select id="txn-type" class="form-input" style="padding: 10px; width: 100%; border-radius: 8px;" required>
+                                            <option value="invest">Invest Capital (+)</option>
+                                            <option value="spend">Spend Capital / Expense (-)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="txn-person-name">Name</label>
+                                        <input type="text" id="txn-person-name" class="form-input" placeholder="e.g. Owner, Partner A" style="padding: 10px;" required>
+                                    </div>
+                                </div>
+                                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div class="form-group">
+                                        <label for="txn-amount">Amount (₹)</label>
+                                        <input type="number" id="txn-amount" class="form-input" placeholder="e.g. 50000" style="padding: 10px;" required min="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="txn-date">Date</label>
+                                        <input type="date" id="txn-date" class="form-input" style="padding: 10px;" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="txn-desc">Description</label>
+                                    <input type="text" id="txn-desc" class="form-input" placeholder="e.g. Initial capital seed or Purchased computer" style="padding: 10px;">
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="margin-top: 10px; width: 100%;">
+                                    <i class="fa-solid fa-circle-check"></i> Record Transaction
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Right block: Logs list -->
+                        <div class="glass-card" style="display: flex; flex-direction: column;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <h3 id="tb-log-title" style="margin: 0;"><i class="fa-solid fa-receipt"></i> Transaction History</h3>
+                            </div>
+                            
+                            <!-- Logs Table Container -->
+                            <div class="table-container" style="flex-grow: 1; max-height: 250px; overflow-y: auto;">
+                                <table>
+                                    <thead>
+                                        <tr id="tb-log-headers">
+                                            <th>Date</th>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th style="text-align: right;">Amount (₹)</th>
+                                            <th style="text-align: right; width: 15%;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tb-log-body">
+                                        <!-- Will populate dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 7: AREA MANAGEMENT -->
+                <div id="view-area-settings" class="app-view">
+                    <div class="split-layout">
+                        <!-- Left Block: Add Area -->
+                        <div class="glass-card">
+                            <h3><i class="fa-solid fa-circle-plus"></i> Define Operating Area / Geofence</h3>
+                            <p style="color: var(--text-muted); font-size: 12px; margin-top: 4px; margin-bottom: 20px;">
+                                Setup collection zones. Pin areas on the map and set radiuses in meters. Collector coordinate tags will be verified against these boundaries.
+                            </p>
+
+                            <form id="area-config-form">
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="area-name">Village / Area Name</label>
+                                    <input type="text" id="area-name" placeholder="e.g. East Village Ward 2" required>
+                                </div>
+                                <div class="form-grid" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 12px;">
+                                    <div class="form-group">
+                                        <label for="area-lat">Center Latitude</label>
+                                        <input type="number" step="any" id="area-lat" placeholder="Click map to autofill" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="area-lng">Center Longitude</label>
+                                        <input type="number" step="any" id="area-lng" placeholder="Click map to autofill" required>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label for="area-radius">Target Geofence Radius (meters)</label>
+                                    <input type="number" id="area-radius" value="500" min="50" max="10000" required>
+                                </div>
+
+                                <div class="btn-group">
+                                    <button type="submit" class="btn btn-wood">
+                                        <i class="fa-solid fa-map-pin"></i> Save Operating Area
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="btn-clear-area">Clear</button>
+                                </div>
+                            </form>
+
+                            <!-- Area List Table -->
+                            <div class="table-container" style="margin-top: 24px; max-height: 220px; overflow-y: auto;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Area Name</th>
+                                            <th>Radius</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="area-list-table-body">
+                                        <!-- Dynamic entries -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Right Block: Mapping view -->
+                        <div class="glass-card" style="display: flex; flex-direction: column; align-self: stretch;">
+                            <h3 style="margin-bottom: 12px;"><i class="fa-solid fa-earth-asia"></i> Area Geofencing Map Visualizer</h3>
+                            <div class="map-wrapper large" id="area-management-map" style="flex-grow: 1;"></div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
+                                <i class="fa-solid fa-circle-info"></i> Click anywhere on the map to define the latitude and longitude center point.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 7.5: ADMIN PLATFORM CONSOLE -->
+                <div id="view-admin-console" class="app-view">
+                    <div class="split-layout equal" style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; align-items: start;">
+                        <!-- Left Panel: Create Owner -->
+                        <div class="glass-card">
+                            <h3><i class="fa-solid fa-user-plus"></i> Register Owner</h3>
+                            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 20px;">Deploy a new isolated tenant environment for a business owner.</p>
+                            <form id="admin-owner-form">
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="admin-owner-username">Username</label>
+                                    <input type="text" id="admin-owner-username" placeholder="e.g. owner1" required style="padding: 10px; width: 100%;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 12px;">
+                                    <label for="admin-owner-name">Owner Full Name</label>
+                                    <input type="text" id="admin-owner-name" placeholder="e.g. John Doe" required style="padding: 10px; width: 100%;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label for="admin-owner-password">Login Password</label>
+                                    <input type="password" id="admin-owner-password" placeholder="Enter password" required minlength="4" style="padding: 10px; width: 100%;">
+                                </div>
+                                <button type="submit" class="btn btn-success" style="width: 100%;">
+                                    <i class="fa-solid fa-user-check"></i> Register Owner Account
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <!-- Right Panel: Active Tenant Environments -->
+                        <div class="glass-card">
+                            <h3><i class="fa-solid fa-database"></i> Tenant Environments</h3>
+                            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 16px;">Monitor active SQLite containers, check metrics, and run administrative backups or database wipes.</p>
+                            <div class="table-container" style="overflow-x: auto;">
+                                <table class="data-table" id="admin-tenants-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Owner Info</th>
+                                            <th>Workspace</th>
+                                            <th>DB File / Size</th>
+                                            <th>Loans</th>
+                                            <th>Collections</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-tenants-table-body">
+                                        <!-- Loaded dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 8: SYSTEM SETTINGS & BACKUP -->
+                <div id="view-settings" class="app-view">
+                    <div class="split-layout equal">
+                        
+                        <!-- Left Panel: Security and Management -->
+                        <div style="display: flex; flex-direction: column; gap: 24px; max-height: calc(100vh - 140px); overflow-y: auto; padding-right: 8px;">
+                            <!-- Change Password Card -->
+                            <div class="glass-card">
+                                <h3><i class="fa-solid fa-key"></i> Owner Credentials</h3>
+                                <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 20px;">Update your System Owner administrator password.</p>
+                                
+                                <form id="owner-password-change-form">
+                                    <div class="form-group" style="margin-bottom: 16px;">
+                                        <label for="pwd-admin-new">New Password</label>
+                                        <input type="text" id="pwd-admin-new" placeholder="Enter new password" required minlength="4" style="-webkit-text-security: disc; text-security: disc;">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 20px;">
+                                        <label for="pwd-admin-confirm">Confirm Password</label>
+                                        <input type="text" id="pwd-admin-confirm" placeholder="Re-type new password" required minlength="4" style="-webkit-text-security: disc; text-security: disc;">
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                        <i class="fa-solid fa-floppy-disk"></i> Update Admin Password
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Collector Management Card -->
+                            <div class="glass-card" id="collector-management-card">
+                                <h3><i class="fa-solid fa-users-gear"></i> Collector Management</h3>
+                                <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 16px;">Add or remove field collector agent logins dynamically.</p>
+                                
+                                <form id="collector-management-form">
+                                    <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                                        <div class="form-group">
+                                            <label for="coll-username">Agent Username</label>
+                                            <input type="text" id="coll-username" placeholder="e.g. agent1" required style="padding: 10px;">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="coll-name">Agent Display Name</label>
+                                            <input type="text" id="coll-name" placeholder="e.g. John Agent" required style="padding: 10px;">
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 16px;">
+                                        <label for="coll-password">Agent Login Password</label>
+                                        <input type="text" id="coll-password" placeholder="Enter password" required minlength="4" style="padding: 10px; -webkit-text-security: disc; text-security: disc;">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 16px;">
+                                        <label for="coll-assigned-line">Assign Collection Line</label>
+                                        <select id="coll-assigned-line" class="form-input" style="padding: 10px;" required>
+                                            <option value="">-- Select Line --</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-success" style="width: 100%; margin-bottom: 16px;">
+                                        <i class="fa-solid fa-user-plus"></i> Add Collector Agent
+                                    </button>
+                                </form>
+                                
+                                <div class="table-container" style="max-height: 150px; overflow-y: auto;">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Agent ID</th>
+                                                <th>Name</th>
+                                                <th style="width: 40%;">Assigned Line</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="collector-list-table-body">
+                                            <!-- Dynamic collector rows -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Owner Management Card -->
+                            <div class="glass-card" id="owner-management-card">
+                                <h3><i class="fa-solid fa-user-gear"></i> Owner Management</h3>
+                                <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 16px;">Add or remove system owner logins dynamically.</p>
+                                
+                                <form id="owner-management-form">
+                                    <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                                        <div class="form-group">
+                                            <label for="owner-username">Owner Username</label>
+                                            <input type="text" id="owner-username" placeholder="e.g. owner1" required style="padding: 10px;">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="owner-name">Owner Display Name</label>
+                                            <input type="text" id="owner-name" placeholder="e.g. John Owner" required style="padding: 10px;">
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 16px;">
+                                        <label for="owner-password">Owner Login Password</label>
+                                        <input type="text" id="owner-password" placeholder="Enter password" required minlength="4" style="padding: 10px; -webkit-text-security: disc; text-security: disc;">
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-success" style="width: 100%; margin-bottom: 16px;">
+                                        <i class="fa-solid fa-user-plus"></i> Add Owner Account
+                                    </button>
+                                </form>
+                                
+                                <div class="table-container" style="max-height: 150px; overflow-y: auto;">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Owner ID</th>
+                                                <th>Name</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="owner-list-table-body">
+                                            <!-- Dynamic owner rows -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Database management and backup -->
+                        <div style="display: flex; flex-direction: column; gap: 24px; max-height: calc(100vh - 140px); overflow-y: auto; padding-right: 8px;">
+                            <div class="glass-card" style="display: flex; flex-direction: column; gap: 16px;">
+                                <h3><i class="fa-solid fa-database"></i> Database Operations</h3>
+                                <p style="color: var(--text-muted); font-size: 12px;">
+                                    Import or export your database container. Your data is securely isolated on the server inside SQLite container files. Exporting downloads a local backup copy of your business ledger.
+                                </p>
+                                
+                                <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); padding: 12px; border-radius: 12px; font-size: 12px; color: #fef3c7;">
+                                    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px; color: var(--color-warning);"></i>
+                                    Warning: Importing backups will overwrite your active database session completely!
+                                </div>
+
+                                <div class="btn-group" style="margin-top: 10px;">
+                                    <button class="btn btn-success" id="btn-export-db">
+                                        <i class="fa-solid fa-file-export"></i> Export Database (JSON)
+                                    </button>
+                                    <button class="btn btn-secondary" id="btn-import-db-trigger">
+                                        <i class="fa-solid fa-file-import"></i> Import Database (JSON)
+                                    </button>
+                                    <input type="file" id="db-import-file-input" accept=".json" style="display: none;">
+                                </div>
+
+                                <div class="btn-group" style="margin-top: 5px;">
+                                    <button class="btn btn-success" id="btn-export-mdb" style="background: var(--color-primary); border-color: var(--color-primary);">
+                                        <i class="fa-solid fa-file-invoice"></i> Export Database (MDB)
+                                    </button>
+                                    <button class="btn btn-secondary" id="btn-import-mdb-trigger">
+                                        <i class="fa-solid fa-file-excel"></i> Import Database (MDB)
+                                    </button>
+                                    <input type="file" id="db-import-mdb-input" accept=".mdb" style="display: none;">
+                                </div>
+
+                                <div id="settings-dangerous-actions" style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 10px;">
+                                    <h4 style="color: var(--color-danger); margin-bottom: 8px;">Dangerous Actions</h4>
+                                    <div class="btn-group">
+                                        <button class="btn btn-danger" id="btn-clear-db">
+                                            <i class="fa-solid fa-dumpster-fire"></i> Wipe All Data
+                                        </button>
+                                        <button class="btn btn-secondary" id="btn-load-dummies">
+                                            <i class="fa-solid fa-wand-magic-sparkles"></i> Load Demo Data
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Language & Translation Settings Card -->
+                            <div class="glass-card" id="settings-language-card" style="margin-bottom: 24px;">
+                                <h3><i class="fa-solid fa-language"></i> Language Settings</h3>
+                                <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 16px;">
+                                    Configure your system display language and your input typing language.
+                                </p>
+                                <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                                    <div class="form-group">
+                                        <label for="settings-system-lang-select">System Language</label>
+                                        <select id="settings-system-lang-select" style="width: 100%; padding: 10px; border-radius: 8px;">
+                                            <option value="en">English (EN)</option>
+                                            <option value="hi">हिन्दी (Hindi)</option>
+                                            <option value="te">తెలుగు (Telugu)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="settings-input-lang-select">Input Language</label>
+                                        <select id="settings-input-lang-select" style="width: 100%; padding: 10px; border-radius: 8px;">
+                                            <option value="en">English (EN)</option>
+                                            <option value="hi">हिन्दी (Hindi)</option>
+                                            <option value="te">తెలుగు (Telugu)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 10px;">
+                                    <input type="checkbox" id="settings-translit-enabled" style="width: auto;" checked>
+                                    <label for="settings-translit-enabled" style="margin-bottom: 0; cursor: pointer;">Enable Phonetic Transliteration (Space to convert English to native script)</label>
+                                </div>
+                            </div>
+
+                            <!-- App Installation Card (macOS, iOS, Android) -->
+                            <div class="glass-card" id="settings-install-card" style="margin-bottom: 24px;">
+                                <h3><i class="fa-solid fa-laptop-mobile"></i> Desktop & Mobile App</h3>
+                                <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 16px;">
+                                    Install Terrasol FinServ as a standalone app on your Mac, iPhone, or Android device for native-like performance and offline support.
+                                </p>
+                                <div id="pwa-install-section" style="display: none; margin-bottom: 16px;">
+                                    <button class="btn btn-primary" id="btn-pwa-install" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <i class="fa-solid fa-download"></i> Install Standalone App
+                                    </button>
+                                </div>
+                                <div style="background: rgba(226, 91, 56, 0.05); border: 1px solid rgba(226, 91, 56, 0.15); padding: 12px; border-radius: 12px; font-size: 12px;">
+                                    <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text-dark);"><i class="fa-brands fa-apple"></i> macOS Standalone setup:</h4>
+                                    <ul style="padding-left: 20px; color: var(--text-muted); display: flex; flex-direction: column; gap: 4px;">
+                                        <li>Open this link in **Safari**.</li>
+                                        <li>Select **File** &rarr; **Add to Dock...** in the menu bar.</li>
+                                        <li>Launch the app directly from your Dock or Launchpad!</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- PRINT SLIP TEMPLATE CONTAINER -->
+    <div id="print-receipt-slip" class="print-only-slip">
+        <!-- Thermal Receipt structure injected dynamically by JS -->
+    </div>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR -->
+    <div class="mobile-bottom-nav">
+        <a class="bottom-nav-link active" data-view="dashboard" style="cursor: pointer;">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+        </a>
+        <a class="bottom-nav-link" data-view="daily-posting" style="cursor: pointer;">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Collections</span>
+        </a>
+        <a class="bottom-nav-link" data-view="new-loans" style="cursor: pointer;">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>New Loan</span>
+        </a>
+        <a class="bottom-nav-link" id="btn-mobile-more" style="cursor: pointer;">
+            <i class="fa-solid fa-bars"></i>
+            <span>More</span>
+        </a>
+    </div>
+
+    <!-- Walkie-Talkie Radio Transmission Overlay -->
+    <div id="radio-popup" style="display: none; position: fixed; bottom: 85px; right: 24px; width: 320px; background: rgba(32, 23, 41, 0.93); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 2px solid var(--color-primary); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(226, 91, 56, 0.2); padding: 16px; z-index: 10000; font-family: var(--font-main); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(246, 139, 85, 0.2); padding-bottom: 8px; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-walkie-talkie" style="color: var(--color-secondary); font-size: 16px;"></i>
+                <span style="font-weight: 800; font-size: 11px; text-transform: uppercase; color: var(--color-secondary); letter-spacing: 0.1em;">Radio Ch. 3</span>
+            </div>
+            <button id="close-radio-btn" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-secondary)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 16px; flex-shrink: 0; box-shadow: 0 0 8px rgba(226, 91, 56, 0.4);" id="radio-avatar">D</div>
+            <div style="flex-grow: 1;">
+                <h4 style="font-size: 13px; font-weight: 700; color: #ffffff; margin-bottom: 2px;" id="radio-speaker">Delilah</h4>
+                <p style="font-size: 12px; color: var(--text-main); line-height: 1.4; font-style: italic;" id="radio-text">"Henry? You copy? Two Forks Lookout online. Over."</p>
+            </div>
+        </div>
+        <div style="margin-top: 12px; text-align: right; font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">
+            Click Walkie-Talkie to transmit <i class="fa-solid fa-microphone" style="margin-left: 2px;"></i>
+        </div>
+    </div>
+
+    <!-- Autumn Leaves Canvas for Easter Egg -->
+    <canvas id="leaves-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99999; display: none;"></canvas>
+
+    <!-- Subscription Billing / Paywall Overlay -->
+    <div id="billing-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(20, 5, 10, 0.95); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 100000; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; color: #ffe3eb;">
+        <div class="glass-card" style="width: 440px; padding: 40px; border-radius: 24px; border: 2px solid #d4af37; background: rgba(45, 10, 21, 0.85); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(212, 175, 55, 0.4); text-align: center; display: flex; flex-direction: column; gap: 24px;">
+            <div>
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(212, 175, 55, 0.15); border: 2px solid #d4af37; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 0 20px rgba(212, 175, 55, 0.25);">
+                    <i class="fa-solid fa-credit-card" style="color: #d4af37; font-size: 32px;"></i>
+                </div>
+                <h2 style="font-weight: 800; font-size: 26px; color: #ffd700; text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3); margin-bottom: 8px;">Subscription Expired</h2>
+                <p style="color: #c896a6; font-size: 13px; line-height: 1.5;">Your account access has been paused. Please complete your subscription payment to unlock and resume your real-time collections ledger.</p>
+            </div>
+            
+            <div style="background: rgba(0, 0, 0, 0.25); border-radius: 14px; padding: 16px; border: 1px dashed rgba(212, 175, 55, 0.2); font-size: 12px; text-align: left; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between;"><span style="color: #ffe3eb; font-weight: 600;">Plan:</span><span style="color: #ffd700; font-weight: 700;">Terrasol Standard Pro</span></div>
+                <div style="display: flex; justify-content: space-between;"><span style="color: #ffe3eb; font-weight: 600;">Cost:</span><span style="color: #ffd700; font-weight: 700;">$9.99 / Month</span></div>
+                <div style="display: flex; justify-content: space-between;"><span style="color: #ffe3eb; font-weight: 600;">Status:</span><span style="color: #ff3366; font-weight: 700;">Suspended</span></div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Real Payment Hook Placeholder -->
+                <button class="btn btn-wood" id="btn-stripe-checkout" style="width: 100%; padding: 12px; position: relative;">
+                    <i class="fa-solid fa-lock" style="margin-right: 6px;"></i> Secure Checkout
+                </button>
+                <!-- Interactive Billing Simulator -->
+                <button class="btn btn-secondary" id="btn-simulate-payment" style="width: 100%; border: 1px solid rgba(255,255,255,0.15); background: transparent; color: #ffe3eb; padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
+                    <i class="fa-solid fa-flask" style="margin-right: 6px;"></i> Simulate Stripe Webhook (Renew 1 Mo)
+                </button>
+            </div>
+
+            <div style="font-size: 10px; color: #c896a6; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <i class="fa-solid fa-shield-halved"></i> 256-bit SSL encrypted connection
+            </div>
+    <!-- MENTOR PASSBOOK / ACCOUNT CARD MODAL (ACC.txt) -->
+    <div id="modal-mentor-passbook" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+        <div class="glass-card" style="max-width: 580px; width: 100%; max-height: 90vh; display: flex; flex-direction: column; padding: 24px; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-receipt" style="color: var(--color-primary); font-size: 20px;"></i>
+                    <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;">Borrower Passbook & Statement (ACC.txt)</h3>
+                </div>
+                <button type="button" id="btn-close-passbook-modal" style="background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Passbook Receipt Screen (Monospace matching ACC.txt) -->
+            <div id="passbook-monospace-container" style="flex-grow: 1; overflow-y: auto; background: #1a1520; color: #fef08a; padding: 18px; border-radius: 10px; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.45; white-space: pre; border: 1px solid rgba(254, 240, 138, 0.2); margin-bottom: 16px; box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);">
+                Loading passbook statement...
+            </div>
+
+            <!-- Modal Action Buttons -->
+            <div style="display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-wood btn-sm" id="btn-print-passbook">
+                        <i class="fa-solid fa-print"></i> Print Statement
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-thermal-passbook">
+                        <i class="fa-solid fa-receipt"></i> Thermal 80mm
+                    </button>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-acc-text">
+                        <i class="fa-solid fa-copy"></i> Copy ACC.txt
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-close-passbook-btn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('Service Worker registered successfully:', reg.scope))
+                    .catch((err) => console.warn('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

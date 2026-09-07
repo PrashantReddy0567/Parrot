@@ -1,0 +1,13 @@
+{
+  "name": "terrasol-microfinance-ledger",
+  "version": "1.0.0",
+  "description": "Multi-Tenant Microfinance Ledger & Mentor Bridge Suite",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "cd server && node server.js",
+    "build": "cd server && npm install"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
