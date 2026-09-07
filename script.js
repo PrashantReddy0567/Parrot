@@ -724,13 +724,57 @@ window.addEventListener('online', () => {
 setTimeout(() => offlineQueue.processQueue(), 2000);
 
 // Dynamic Backend API Base URL configuration for decoupled hosting (Vercel + Render)
-const API_BASE_URL = (() => {
+let API_BASE_URL = (() => {
     // If running locally or served directly from Render, use relative endpoints
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return '';
     if (window.location.hostname.endsWith('onrender.com')) return '';
-    // If hosted on Vercel, use configured Render backend URL or localStorage override
-    return localStorage.getItem('CUSTOM_API_BASE_URL') || 'https://terrasol-ledger-api.onrender.com';
+    // If hosted on Vercel or custom domain, use configured Render backend URL
+    return localStorage.getItem('CUSTOM_API_BASE_URL') || '';
 })();
+
+function updateApiStatusIndicator() {
+    const apiIndicatorEl = document.getElementById('api-current-url');
+    if (!apiIndicatorEl) return;
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        apiIndicatorEl.textContent = 'Localhost (Direct)';
+        apiIndicatorEl.style.color = '#38bdf8';
+    } else if (window.location.hostname.endsWith('onrender.com')) {
+        apiIndicatorEl.textContent = 'Render (Direct Full-Stack)';
+        apiIndicatorEl.style.color = '#4ade80';
+    } else {
+        const customUrl = localStorage.getItem('CUSTOM_API_BASE_URL');
+        if (customUrl) {
+            apiIndicatorEl.textContent = customUrl.replace(/^https?:\/\//, '');
+            apiIndicatorEl.style.color = '#4ade80';
+        } else {
+            apiIndicatorEl.textContent = 'Not Configured (Click to set Render URL)';
+            apiIndicatorEl.style.color = '#fbbf24';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateApiStatusIndicator();
+    const btnChangeApi = document.getElementById('btn-change-api-url');
+    if (btnChangeApi) {
+        btnChangeApi.addEventListener('click', () => {
+            const current = localStorage.getItem('CUSTOM_API_BASE_URL') || '';
+            const next = prompt(
+                'Enter your live Render Backend API URL:\n(e.g., https://your-app-name.onrender.com)\n\nLeave blank to reset to default.',
+                current
+            );
+            if (next !== null) {
+                const clean = next.trim().replace(/\/+$/, '');
+                if (clean) {
+                    localStorage.setItem('CUSTOM_API_BASE_URL', clean);
+                } else {
+                    localStorage.removeItem('CUSTOM_API_BASE_URL');
+                }
+                window.location.reload();
+            }
+        });
+    }
+});
 
 function showBillingPage() {
     const billingOverlay = document.getElementById('billing-overlay');
