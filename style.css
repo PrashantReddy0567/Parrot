@@ -179,6 +179,8 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     line-height: 1.5;
+    font-weight: 600;
+    font-size: 15px;
     transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
@@ -519,16 +521,16 @@ body {
 }
 
 .stat-label {
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 800;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .stat-value {
-    font-size: 20px;
-    font-weight: 800;
+    font-size: 24px;
+    font-weight: 900;
     color: var(--text-dark);
 }
 
@@ -594,9 +596,9 @@ body {
 }
 
 label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dark);
 }
 
 input, select, textarea {
@@ -605,7 +607,8 @@ input, select, textarea {
     color: var(--text-dark);
     padding: 7px 11px;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: 14.5px;
+    font-weight: 800;
     font-family: var(--font-main);
     transition: all 0.2s ease;
 }
@@ -832,14 +835,14 @@ table {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
-    font-size: 12px;
+    font-size: 13.5px;
 }
 
 th {
     background: var(--table-header-bg);
     padding: 7px 10px;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 13.5px;
     color: var(--text-muted);
     border-bottom: 1px solid var(--border-color);
 }
@@ -961,85 +964,52 @@ body.theme-royal-crimson .login-container::before {
     max-width: 440px;
     display: flex;
     justify-content: center;
+    align-items: center;
     animation: fadeInDeity 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .deity-frame {
-    background: #ffffff;
-    border-radius: 24px;
+    background: radial-gradient(circle at center, rgba(6, 95, 70, 0.88) 0%, rgba(2, 44, 34, 0.98) 100%);
+    border-radius: 28px;
     border: 2.5px solid #d4af37;
     box-shadow: 
-        0 18px 45px rgba(0, 0, 0, 0.45),
-        0 0 28px rgba(212, 175, 55, 0.35);
-    padding: 16px;
+        0 20px 50px rgba(0, 0, 0, 0.55),
+        0 0 35px rgba(16, 185, 129, 0.45),
+        0 0 20px rgba(212, 175, 55, 0.35);
+    padding: 20px 16px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
     width: 100%;
+    height: 540px;
+    min-height: 520px;
+    max-height: 560px;
+    box-sizing: border-box;
+    overflow: hidden;
     transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
 }
 
 .deity-frame:hover {
     transform: translateY(-6px);
     box-shadow: 
-        0 24px 55px rgba(0, 0, 0, 0.55),
-        0 0 38px rgba(212, 175, 55, 0.55);
-}
-
-.deity-badge {
-    background: linear-gradient(135deg, #047857 0%, #065f46 100%);
-    color: #fef08a;
-    border: 1px solid #d4af37;
-    padding: 6px 20px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 12px rgba(4, 120, 87, 0.4);
-}
-
-.deity-image-wrapper {
-    width: 100%;
-    border-radius: 16px;
-    overflow: hidden;
-    background: #ffffff;
-    border: 1px solid rgba(212, 175, 55, 0.35);
+        0 26px 60px rgba(0, 0, 0, 0.65),
+        0 0 45px rgba(16, 185, 129, 0.6),
+        0 0 28px rgba(212, 175, 55, 0.5);
 }
 
 .deity-photo {
     width: 100%;
-    height: auto;
+    height: 100%;
+    max-height: 485px;
     display: block;
     object-fit: contain;
-    transition: transform 0.45s ease;
+    filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 18px rgba(212, 175, 55, 0.35));
+    transition: transform 0.45s ease, filter 0.45s ease;
 }
 
 .deity-frame:hover .deity-photo {
-    transform: scale(1.025);
-}
-
-.deity-chant {
-    text-align: center;
-    padding: 4px 8px 2px;
-}
-
-.deity-chant span {
-    display: block;
-    font-size: 13px;
-    font-weight: 800;
-    color: #047857;
-    letter-spacing: 0.4px;
-}
-
-.deity-chant p {
-    font-size: 11px;
-    color: #64748b;
-    margin-top: 3px;
-    font-weight: 600;
+    transform: scale(1.035);
+    filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 28px rgba(212, 175, 55, 0.55));
 }
 
 /* Center Login Card */
@@ -1047,18 +1017,22 @@ body.theme-royal-crimson .login-container::before {
     width: 440px;
     min-width: 320px;
     max-width: 440px;
-    padding: 36px 32px;
+    height: 540px;
+    min-height: 520px;
+    max-height: 560px;
+    padding: 34px 32px;
     display: flex;
     flex-direction: column;
-    gap: 22px;
+    justify-content: space-between;
+    box-sizing: border-box;
     animation: zoomIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
     background: #ffffff !important;
-    border: 2px solid #10b981 !important;
+    border: 2.5px solid #10b981 !important;
     box-shadow: 
         0 20px 50px rgba(0, 0, 0, 0.45),
-        0 0 35px rgba(16, 185, 129, 0.3),
+        0 0 35px rgba(16, 185, 129, 0.35),
         0 0 18px rgba(212, 175, 55, 0.25) !important;
-    border-radius: 24px;
+    border-radius: 28px !important;
     z-index: 2;
     transition: all 0.4s ease;
 }
@@ -1074,61 +1048,77 @@ body.theme-royal-crimson .login-container::before {
     background: linear-gradient(135deg, #047857 0%, #059669 50%, #b45309 100%) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
-    font-weight: 800 !important;
-    font-size: 24px !important;
+    font-weight: 900 !important;
+    font-size: 28px !important;
+    letter-spacing: 0.5px !important;
 }
 
 .login-subtitle {
-    color: #475569 !important;
-    font-size: 13px;
+    color: #1e293b !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    margin-top: 2px !important;
 }
 
 .login-card label {
-    color: #1e293b;
-    font-weight: 600;
-    font-size: 13px;
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    font-size: 15.5px !important;
+    letter-spacing: 0.3px;
+    margin-bottom: 4px;
+    display: block;
 }
 
 .login-card label i {
-    color: #059669;
+    color: #059669 !important;
+    font-size: 16px !important;
+    margin-right: 4px;
 }
 
 .login-card input, 
 .login-card select {
-    border: 1.5px solid #cbd5e1 !important;
-    border-radius: 10px !important;
-    padding: 11px 14px !important;
-    font-size: 14px !important;
+    border: 2px solid #94a3b8 !important;
+    border-radius: 12px !important;
+    padding: 13px 16px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
     transition: all 0.25s ease !important;
     background: #f8fafc !important;
     color: #0f172a !important;
+}
+
+.login-card input::placeholder {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
 }
 
 .login-card input:focus, 
 .login-card select:focus {
     border-color: #059669 !important;
     background: #ffffff !important;
-    box-shadow: 0 0 0 3.5px rgba(16, 185, 129, 0.25) !important;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3) !important;
     outline: none !important;
 }
 
 /* Green Authenticate Button */
 .btn-wood {
     background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
-    border: 1.5px solid #d4af37 !important;
+    border: 2px solid #d4af37 !important;
     color: #ffffff !important;
-    box-shadow: 0 4px 16px rgba(5, 150, 105, 0.42), 0 0 10px rgba(212, 175, 55, 0.25) !important;
-    font-weight: 700 !important;
-    font-size: 14px !important;
-    letter-spacing: 0.3px;
-    border-radius: 12px !important;
+    box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45), 0 0 12px rgba(212, 175, 55, 0.3) !important;
+    font-weight: 900 !important;
+    font-size: 17px !important;
+    letter-spacing: 0.8px !important;
+    border-radius: 14px !important;
     cursor: pointer;
     transition: all 0.25s ease !important;
+    text-transform: uppercase;
 }
 
 .btn-wood:hover {
     background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
-    box-shadow: 0 6px 22px rgba(5, 150, 105, 0.55), 0 0 16px rgba(212, 175, 55, 0.4) !important;
+    box-shadow: 0 8px 26px rgba(5, 150, 105, 0.6), 0 0 20px rgba(212, 175, 55, 0.5) !important;
     transform: translateY(-2px);
 }
 
@@ -1191,19 +1181,24 @@ body.theme-royal-crimson .login-container::before {
         border-bottom: 1px solid rgba(16, 185, 129, 0.2);
     }
     .mobile-deity-circle {
-        width: 60px;
-        height: 60px;
+        width: 64px;
+        height: 64px;
         border-radius: 50%;
         overflow: hidden;
-        border: 2px solid #d4af37;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 0 10px rgba(212, 175, 55, 0.35);
-        background: #ffffff;
+        border: 2.5px solid #d4af37;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 12px rgba(212, 175, 55, 0.4);
+        background: radial-gradient(circle at center, #065f46 0%, #022c22 100%);
         flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        box-sizing: border-box;
     }
     .mobile-deity-circle img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
     }
     .mobile-divine-blessing {
         text-align: center;
